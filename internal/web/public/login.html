@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 | 应用定时管家</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Theme toggle in corner -->
+      <button class="theme-toggle" onclick="toggleTheme()" title="切换主题" aria-label="切换主题" style="position: absolute; top: 16px; right: 16px;">
+        <i class="ri-sun-line icon-sun"></i>
+        <i class="ri-moon-line icon-moon"></i>
+      </button>
+
+      <div class="login-logo">
+        <i class="ri-timer-flash-line"></i>
+      </div>
+      <h1 class="login-title" data-i18n="app_name">应用定时管家</h1>
+      <p class="login-subtitle" data-i18n="login_subtitle">登录以管理您的定时任务</p>
+
+      <a href="/auth/oidc/login" class="btn btn-primary login-btn">
+        <i class="ri-login-box-line"></i>
+        <span data-i18n="login_with_lazycat">使用懒猫账号登录</span>
+      </a>
+
+      <p class="text-muted" style="margin-top: 24px; font-size: 12px;" data-i18n="login_hint">
+        您需要使用懒猫微服账号登录
+      </p>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

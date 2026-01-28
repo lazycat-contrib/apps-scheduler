@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>设置 | 应用定时管家</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="/" class="logo">
+        <div class="logo-icon">
+          <i class="ri-timer-flash-line"></i>
+        </div>
+        <div class="logo-text" data-i18n="app_name">应用定时管家</div>
+      </a>
+
+      <div class="header-actions">
+        <!-- Theme Toggle -->
+        <button class="theme-toggle" onclick="toggleTheme()" title="切换主题" aria-label="切换主题">
+          <i class="ri-sun-line icon-sun"></i>
+          <i class="ri-moon-line icon-moon"></i>
+        </button>
+        <!-- Language Selector -->
+        <select class="form-select" id="langSelector" style="width: auto; padding: 6px 32px 6px 12px; font-size: 12px;" onchange="setLang(this.value)">
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+        </select>
+        <a href="/" class="btn btn-secondary btn-sm">
+          <i class="ri-arrow-left-line"></i>
+          <span data-i18n="back">返回</span>
+        </a>
+        <div class="user-info" id="userInfo">
+          <div class="user-avatar" id="userAvatar">-</div>
+          <div>
+            <div class="user-name" id="userName">加载中...</div>
+            <div class="user-role" id="userRole">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+    <div class="container">
+      <div class="page-title" data-i18n="system_config">系统配置</div>
+      <h1 class="page-heading" data-i18n="settings">设置</h1>
+
+      <!-- Notification Settings -->
+      <section class="section">
+        <div class="card settings-card">
+          <div class="settings-section">
+            <div class="settings-section-title">
+              <i class="ri-notification-3-line"></i>
+              <span data-i18n="push_notification">推送通知</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="serverchan_sendkey">Server酱 SendKey</label>
+              <input type="text" class="form-input" id="sendKey" data-i18n-placeholder="sendkey_placeholder" placeholder="请输入 SendKey...">
+              <div class="text-muted" style="font-size: 12px; margin-top: 8px;">
+                <span data-i18n="sendkey_hint">获取 SendKey:</span> <a href="https://sct.ftqq.com/" target="_blank" style="color: var(--accent-secondary);">sct.ftqq.com</a>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label" data-i18n="enable_notify">启用通知</div>
+                <div class="settings-row-desc" data-i18n="enable_notify_desc">开启后将在任务执行时发送推送</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="notifyEnabled">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label" data-i18n="notify_on_success">成功时通知</div>
+                <div class="settings-row-desc" data-i18n="notify_on_success_desc">任务执行成功时发送通知</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="notifyOnSuccess" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label" data-i18n="notify_on_failure">失败时通知</div>
+                <div class="settings-row-desc" data-i18n="notify_on_failure_desc">任务执行失败时发送通知</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="notifyOnFailure" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button class="btn btn-primary" onclick="saveNotifyConfig()">
+              <i class="ri-save-line"></i>
+              <span data-i18n="save_settings">保存设置</span>
+            </button>
+            <button class="btn btn-secondary" onclick="testNotify()">
+              <i class="ri-send-plane-line"></i>
+              <span data-i18n="send_test">发送测试</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="section">
+        <div class="card settings-card">
+          <div class="settings-section">
+            <div class="settings-section-title">
+              <i class="ri-information-line"></i>
+              <span data-i18n="about">关于</span>
+            </div>
+            <div style="color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
+              <p><strong data-i18n="app_name">应用定时管家</strong> (Meow App Operator)</p>
+              <p><span data-i18n="version">版本</span>: 1.0.0</p>
+              <p style="margin-top: 12px;" data-i18n="about_desc">
+                定时启动和停止懒猫微服上的应用，支持自定义调度计划和推送通知。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    // Initialize language selector
+    document.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('langSelector').value = currentLang;
+      await loadUserInfo();
+      await loadNotifyConfig();
+    });
+
+    async function loadNotifyConfig() {
+      try {
+        const resp = await fetch('/api/notify/config');
+        if (!resp.ok) throw new Error('Failed to load config');
+
+        const config = await resp.json();
+        document.getElementById('sendKey').value = config.sendKey || '';
+        document.getElementById('notifyEnabled').checked = config.enabled;
+        document.getElementById('notifyOnSuccess').checked = config.onSuccess;
+        document.getElementById('notifyOnFailure').checked = config.onFailure;
+      } catch (err) {
+        console.error('Failed to load notify config:', err);
+      }
+    }
+
+    async function saveNotifyConfig() {
+      try {
+        const config = {
+          sendKey: document.getElementById('sendKey').value,
+          enabled: document.getElementById('notifyEnabled').checked,
+          onSuccess: document.getElementById('notifyOnSuccess').checked,
+          onFailure: document.getElementById('notifyOnFailure').checked
+        };
+
+        const resp = await fetch('/api/notify/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config)
+        });
+
+        if (!resp.ok) {
+          const data = await resp.json();
+          throw new Error(data.error || 'Failed to save');
+        }
+
+        showToast(t('toast_save_success'), 'success');
+      } catch (err) {
+        showToast(t('toast_save_failed') + ': ' + err.message, 'error');
+      }
+    }
+
+    async function testNotify() {
+      try {
+        const resp = await fetch('/api/notify/test', { method: 'POST' });
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          throw new Error(data.error || 'Failed to send');
+        }
+
+        showToast(t('toast_test_sent'), 'success');
+      } catch (err) {
+        showToast(t('toast_send_failed') + ': ' + err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

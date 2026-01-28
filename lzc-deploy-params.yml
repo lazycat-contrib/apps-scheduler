@@ -1,0 +1,27 @@
+# 部署参数配置文件
+# Setup Wizard Configuration
+
+params:
+  - id: timezone
+    type: string
+    name: "timezone"
+    description: "Timezone for the application (e.g., Asia/Shanghai, America/New_York, Europe/London)"
+    default_value: "Asia/Shanghai"
+    optional: false
+    placeholder: "Asia/Shanghai"
+    regex: "^[A-Za-z]+/[A-Za-z_]+$"
+    regex_message: "Please enter a valid timezone in format: Continent/City"
+
+locales:
+  zh:
+    timezone:
+      name: "时区设置"
+      description: "应用程序的时区设置，用于正确显示和执行定时任务的时间。常用时区：Asia/Shanghai（中国）、America/New_York（美国东部）、Europe/London（英国）"
+  en:
+    timezone:
+      name: "Timezone"
+      description: "Timezone setting for the application, used to correctly display and execute scheduled tasks. Common timezones: Asia/Shanghai (China), America/New_York (US Eastern), Europe/London (UK)"
+  ja:
+    timezone:
+      name: "タイムゾーン"
+      description: "アプリケーションのタイムゾーン設定。スケジュールタスクの時刻表示と実行に使用されます。一般的なタイムゾーン：Asia/Tokyo（日本）、Asia/Shanghai（中国）、America/New_York（米国東部）"
