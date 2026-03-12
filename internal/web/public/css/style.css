@@ -668,6 +668,29 @@ body::after {
   font-weight: 400;
 }
 
+.app-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.app-badge-multi {
+  background: linear-gradient(135deg, var(--accent-secondary) 0%, color-mix(in srgb, var(--accent-secondary) 70%, var(--accent-primary)) 100%);
+  color: var(--bg-primary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent-secondary) 30%, transparent);
+}
+
+.app-badge-multi i {
+  font-size: 10px;
+}
+
 .app-status {
   display: flex;
   align-items: center;

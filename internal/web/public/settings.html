@@ -125,7 +125,7 @@
             </div>
             <div style="color: var(--text-secondary); font-size: 14px; line-height: 1.8;">
               <p><strong data-i18n="app_name">应用定时管家</strong> (Meow App Operator)</p>
-              <p><span data-i18n="version">版本</span>: 1.0.0</p>
+              <p><span data-i18n="version">版本</span>: <span id="appVersion">加载中...</span></p>
               <p style="margin-top: 12px;" data-i18n="about_desc">
                 定时启动和停止懒猫微服上的应用，支持自定义调度计划和推送通知。
               </p>
@@ -146,7 +146,20 @@
       document.getElementById('langSelector').value = currentLang;
       await loadUserInfo();
       await loadNotifyConfig();
+      await loadVersion();
     });
+
+    async function loadVersion() {
+      try {
+        const resp = await fetch('/api/version');
+        if (!resp.ok) throw new Error('Failed to load version');
+        const info = await resp.json();
+        document.getElementById('appVersion').textContent = info.version || 'dev';
+      } catch (err) {
+        console.error('Failed to load version:', err);
+        document.getElementById('appVersion').textContent = 'dev';
+      }
+    }
 
     async function loadNotifyConfig() {
       try {

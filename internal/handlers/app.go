@@ -27,6 +27,7 @@ type AppInfo struct {
 	Version        string `json:"version"`
 	Status         string `json:"status"`
 	InstanceStatus string `json:"instanceStatus"`
+	MultiInstance  bool   `json:"multiInstance"`
 }
 
 func (h *AppHandler) ListApps(c echo.Context) error {
@@ -62,12 +63,6 @@ func (h *AppHandler) ListApps(c echo.Context) error {
 			continue
 		}
 
-		// Filter out multi-instance apps
-		if info.MultiInstance {
-			log.Debug().Str("app_id", info.Appid).Msg("Skipping multi-instance app")
-			continue
-		}
-
 		// Log app info for debugging
 		log.Debug().
 			Str("app_id", info.Appid).
@@ -80,6 +75,7 @@ func (h *AppHandler) ListApps(c echo.Context) error {
 			DeployID:       info.Appid, // Use AppID as DeployID since SDK doesn't provide separate DeployId
 			Status:         info.Status.String(),
 			InstanceStatus: info.InstanceStatus.String(),
+			MultiInstance:  info.MultiInstance,
 		}
 
 		if info.Title != nil {

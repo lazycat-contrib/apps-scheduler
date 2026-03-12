@@ -8,6 +8,7 @@ import (
 	"apps-scheduler/internal/auth"
 	"apps-scheduler/internal/biz"
 	"apps-scheduler/internal/handlers"
+	"apps-scheduler/internal/version"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -107,6 +108,9 @@ func (s *Server) setupRoutes() {
 	api.GET("/notify/config", notifyHandler.GetConfig)
 	api.POST("/notify/config", notifyHandler.SaveConfig)
 	api.POST("/notify/test", notifyHandler.TestNotify)
+
+	// Version - public API (no auth required)
+	s.echo.GET("/api/version", s.getVersion)
 }
 
 func (s *Server) serveFile(filename string) echo.HandlerFunc {
@@ -117,6 +121,10 @@ func (s *Server) serveFile(filename string) echo.HandlerFunc {
 		}
 		return c.HTMLBlob(http.StatusOK, data)
 	}
+}
+
+func (s *Server) getVersion(c echo.Context) error {
+	return c.JSON(http.StatusOK, version.Get())
 }
 
 func (s *Server) Start(addr string) error {

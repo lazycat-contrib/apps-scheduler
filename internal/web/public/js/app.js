@@ -71,6 +71,7 @@ const i18n = {
     status_starting: '恢复中',
     status_stopping: '休眠中',
     status_error: '错误',
+    multi_instance: '多实例',
 
     // Schedules section
     scheduled_tasks: '定时任务',
@@ -158,6 +159,7 @@ const i18n = {
     status_starting: 'Resuming',
     status_stopping: 'Pausing',
     status_error: 'Error',
+    multi_instance: 'Multi-Instance',
 
     scheduled_tasks: 'Scheduled Tasks',
     new_task: 'New Task',
@@ -242,6 +244,7 @@ const i18n = {
     status_starting: '再開中',
     status_stopping: '一時停止処理中',
     status_error: 'エラー',
+    multi_instance: 'マルチインスタンス',
 
     scheduled_tasks: 'スケジュールタスク',
     new_task: '新規タスク',
@@ -425,7 +428,10 @@ function renderApps() {
           ${app.icon ? `<img src="${app.icon}" alt="${app.title}">` : '<i class="ri-app-store-line"></i>'}
         </div>
         <div class="app-info">
-          <div class="app-name">${app.title}${app.version ? ` <span class="app-version">v${app.version}</span>` : ''}</div>
+          <div class="app-name">
+            ${app.title}${app.version ? ` <span class="app-version">v${app.version}</span>` : ''}
+            ${app.multiInstance ? `<span class="app-badge app-badge-multi"><i class="ri-stack-line"></i> ${t('multi_instance')}</span>` : ''}
+          </div>
           <div class="app-id">${app.appId}</div>
           <div class="app-status ${statusClass}">
             <span class="status-dot"></span>

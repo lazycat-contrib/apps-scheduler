@@ -3,6 +3,8 @@ package biz
 import (
 	"context"
 	"fmt"
+	"os"
+	"slices"
 	"sync"
 	"time"
 
@@ -19,12 +21,29 @@ type Scheduler struct {
 	useCase *UseCase
 	stopCh  chan struct{}
 	wg      sync.WaitGroup
+	loc     *time.Location // Timezone location for all time operations
 }
 
 func NewScheduler(useCase *UseCase) *Scheduler {
+	// Get timezone from TZ environment variable
+	tz := os.Getenv("TZ")
+	loc := time.Local // Default to local time
+
+	if tz != "" {
+		if parsedLoc, err := time.LoadLocation(tz); err == nil {
+			loc = parsedLoc
+			log.Info().Str("timezone", tz).Msg("Scheduler using configured timezone")
+		} else {
+			log.Warn().Err(err).Str("timezone", tz).Msg("Failed to load timezone, using local time")
+		}
+	} else {
+		log.Info().Msg("Scheduler using system local time (TZ not set)")
+	}
+
 	return &Scheduler{
 		useCase: useCase,
 		stopCh:  make(chan struct{}),
+		loc:     loc,
 	}
 }
 
@@ -61,10 +80,18 @@ func (s *Scheduler) run() {
 
 func (s *Scheduler) checkAndExecute() {
 	ctx := context.Background()
-	now := time.Now()
+	now := time.Now().In(s.loc) // Use configured timezone
 	weekday := int(now.Weekday())
 	hour := now.Hour()
 	minute := now.Minute()
+
+	log.Debug().
+		Str("timezone", s.loc.String()).
+		Int("weekday", weekday).
+		Int("hour", hour).
+		Int("minute", minute).
+		Str("current_time", now.Format(time.RFC3339)).
+		Msg("Checking schedules")
 
 	schedules, err := s.useCase.GetEnabledSchedules(ctx)
 	if err != nil {
@@ -84,13 +111,7 @@ func (s *Scheduler) shouldExecute(sch *ent.Schedule, weekday, hour, minute int) 
 		return false
 	}
 
-	for _, day := range sch.WeekDays {
-		if day == weekday {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(sch.WeekDays, weekday)
 }
 
 func (s *Scheduler) executeSchedule(ctx context.Context, sch *ent.Schedule) {

@@ -5,9 +5,13 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
+
+	_ "time/tzdata" // Embed timezone database for cross-platform compatibility
 
 	"apps-scheduler/internal/biz"
 	"apps-scheduler/internal/pkg/zlog"
+	"apps-scheduler/internal/version"
 	"apps-scheduler/internal/web"
 
 	"github.com/rs/zerolog/log"
@@ -26,6 +30,29 @@ func main() {
 	}
 	os.MkdirAll(logDir, 0755)
 	zlog.Init(logDir)
+
+	// Log version info
+	log.Info().
+		Str("version", version.Version).
+		Str("git_commit", version.GitCommit).
+		Str("build_time", version.BuildTime).
+		Msg("Starting apps-scheduler")
+
+	// Log timezone information for debugging
+	tz := os.Getenv("TZ")
+	if tz == "" {
+		tz = "not set (using system default)"
+	}
+	now := time.Now()
+	loc, _ := time.LoadLocation(tz)
+	if loc != nil {
+		now = now.In(loc)
+	}
+	log.Info().
+		Str("TZ_env", tz).
+		Str("current_time", now.Format(time.RFC3339)).
+		Str("timezone", now.Location().String()).
+		Msg("Timezone configuration")
 
 	// Database path
 	dbPath := os.Getenv("DB_PATH")
