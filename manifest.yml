@@ -1,11 +1,3 @@
-name: 应用定时管家
-package: community.lazycat.app.czyt.apps-scheduler
-version: 1.0.1
-min_os_version: 1.3.8
-description: "定时启动和停止懒猫微服上的应用"
-license: mit/
-homepage:
-author:
 application:
   subdomain: apps-scheduler
   oidc_redirect_path: /auth/oidc/callback
@@ -27,19 +19,3 @@ application:
     - LAZYCAT_APP_DOMAIN=${LAZYCAT_APP_DOMAIN}
     - DB_PATH=/lzcapp/var/data/apps-scheduler.db
     - LOG_DIR=/lzcapp/var/data/logs
-
-locales:
-  zh:
-    name: "应用定时管家"
-    description: "定时启动和停止懒猫微服上的应用"
-  en:
-    name: "App Scheduler"
-    description: "Schedule start and stop operations for apps on LazyCat"
-  ja:
-    name: "アプリスケジューラー"
-    description: "LazyCat上のアプリを定期的に起動・停止"
-
-unsupported_platforms:
-  - ios
-  - android
-  - tvos

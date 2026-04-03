@@ -8,8 +8,8 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Get version from manifest.yml
-VERSION=$(grep '^version:' manifest.yml | awk '{print $2}')
+# Get version from package.yml
+VERSION=$(grep '^version:' package.yml | awk '{print $2}')
 if [ -z "$VERSION" ]; then
     VERSION="dev"
 fi
