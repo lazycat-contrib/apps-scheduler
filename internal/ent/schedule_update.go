@@ -139,6 +139,27 @@ func (_u *ScheduleUpdate) AddMinute(v int) *ScheduleUpdate {
 	return _u
 }
 
+// SetCheckIntervalMinutes sets the "check_interval_minutes" field.
+func (_u *ScheduleUpdate) SetCheckIntervalMinutes(v int) *ScheduleUpdate {
+	_u.mutation.ResetCheckIntervalMinutes()
+	_u.mutation.SetCheckIntervalMinutes(v)
+	return _u
+}
+
+// SetNillableCheckIntervalMinutes sets the "check_interval_minutes" field if the given value is not nil.
+func (_u *ScheduleUpdate) SetNillableCheckIntervalMinutes(v *int) *ScheduleUpdate {
+	if v != nil {
+		_u.SetCheckIntervalMinutes(*v)
+	}
+	return _u
+}
+
+// AddCheckIntervalMinutes adds value to the "check_interval_minutes" field.
+func (_u *ScheduleUpdate) AddCheckIntervalMinutes(v int) *ScheduleUpdate {
+	_u.mutation.AddCheckIntervalMinutes(v)
+	return _u
+}
+
 // SetEnabled sets the "enabled" field.
 func (_u *ScheduleUpdate) SetEnabled(v bool) *ScheduleUpdate {
 	_u.mutation.SetEnabled(v)
@@ -227,6 +248,11 @@ func (_u *ScheduleUpdate) check() error {
 			return &ValidationError{Name: "minute", err: fmt.Errorf(`ent: validator failed for field "Schedule.minute": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CheckIntervalMinutes(); ok {
+		if err := schedule.CheckIntervalMinutesValidator(v); err != nil {
+			return &ValidationError{Name: "check_interval_minutes", err: fmt.Errorf(`ent: validator failed for field "Schedule.check_interval_minutes": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -273,6 +299,12 @@ func (_u *ScheduleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.AddedMinute(); ok {
 		_spec.AddField(schedule.FieldMinute, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.CheckIntervalMinutes(); ok {
+		_spec.SetField(schedule.FieldCheckIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedCheckIntervalMinutes(); ok {
+		_spec.AddField(schedule.FieldCheckIntervalMinutes, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(schedule.FieldEnabled, field.TypeBool, value)
@@ -410,6 +442,27 @@ func (_u *ScheduleUpdateOne) AddMinute(v int) *ScheduleUpdateOne {
 	return _u
 }
 
+// SetCheckIntervalMinutes sets the "check_interval_minutes" field.
+func (_u *ScheduleUpdateOne) SetCheckIntervalMinutes(v int) *ScheduleUpdateOne {
+	_u.mutation.ResetCheckIntervalMinutes()
+	_u.mutation.SetCheckIntervalMinutes(v)
+	return _u
+}
+
+// SetNillableCheckIntervalMinutes sets the "check_interval_minutes" field if the given value is not nil.
+func (_u *ScheduleUpdateOne) SetNillableCheckIntervalMinutes(v *int) *ScheduleUpdateOne {
+	if v != nil {
+		_u.SetCheckIntervalMinutes(*v)
+	}
+	return _u
+}
+
+// AddCheckIntervalMinutes adds value to the "check_interval_minutes" field.
+func (_u *ScheduleUpdateOne) AddCheckIntervalMinutes(v int) *ScheduleUpdateOne {
+	_u.mutation.AddCheckIntervalMinutes(v)
+	return _u
+}
+
 // SetEnabled sets the "enabled" field.
 func (_u *ScheduleUpdateOne) SetEnabled(v bool) *ScheduleUpdateOne {
 	_u.mutation.SetEnabled(v)
@@ -511,6 +564,11 @@ func (_u *ScheduleUpdateOne) check() error {
 			return &ValidationError{Name: "minute", err: fmt.Errorf(`ent: validator failed for field "Schedule.minute": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CheckIntervalMinutes(); ok {
+		if err := schedule.CheckIntervalMinutesValidator(v); err != nil {
+			return &ValidationError{Name: "check_interval_minutes", err: fmt.Errorf(`ent: validator failed for field "Schedule.check_interval_minutes": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -574,6 +632,12 @@ func (_u *ScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Schedule, err 
 	}
 	if value, ok := _u.mutation.AddedMinute(); ok {
 		_spec.AddField(schedule.FieldMinute, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.CheckIntervalMinutes(); ok {
+		_spec.SetField(schedule.FieldCheckIntervalMinutes, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedCheckIntervalMinutes(); ok {
+		_spec.AddField(schedule.FieldCheckIntervalMinutes, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(schedule.FieldEnabled, field.TypeBool, value)

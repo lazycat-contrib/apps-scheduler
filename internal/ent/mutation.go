@@ -581,27 +581,29 @@ func (m *NotifyConfigMutation) ResetEdge(name string) error {
 // ScheduleMutation represents an operation that mutates the Schedule nodes in the graph.
 type ScheduleMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	name            *string
-	app_id          *string
-	app_title       *string
-	operation       *schedule.Operation
-	week_days       *[]int
-	appendweek_days []int
-	hour            *int
-	addhour         *int
-	minute          *int
-	addminute       *int
-	enabled         *bool
-	creator         *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*Schedule, error)
-	predicates      []predicate.Schedule
+	op                        Op
+	typ                       string
+	id                        *uuid.UUID
+	name                      *string
+	app_id                    *string
+	app_title                 *string
+	operation                 *schedule.Operation
+	week_days                 *[]int
+	appendweek_days           []int
+	hour                      *int
+	addhour                   *int
+	minute                    *int
+	addminute                 *int
+	check_interval_minutes    *int
+	addcheck_interval_minutes *int
+	enabled                   *bool
+	creator                   *string
+	created_at                *time.Time
+	updated_at                *time.Time
+	clearedFields             map[string]struct{}
+	done                      bool
+	oldValue                  func(context.Context) (*Schedule, error)
+	predicates                []predicate.Schedule
 }
 
 var _ ent.Mutation = (*ScheduleMutation)(nil)
@@ -1015,6 +1017,62 @@ func (m *ScheduleMutation) ResetMinute() {
 	m.addminute = nil
 }
 
+// SetCheckIntervalMinutes sets the "check_interval_minutes" field.
+func (m *ScheduleMutation) SetCheckIntervalMinutes(i int) {
+	m.check_interval_minutes = &i
+	m.addcheck_interval_minutes = nil
+}
+
+// CheckIntervalMinutes returns the value of the "check_interval_minutes" field in the mutation.
+func (m *ScheduleMutation) CheckIntervalMinutes() (r int, exists bool) {
+	v := m.check_interval_minutes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCheckIntervalMinutes returns the old "check_interval_minutes" field's value of the Schedule entity.
+// If the Schedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScheduleMutation) OldCheckIntervalMinutes(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCheckIntervalMinutes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCheckIntervalMinutes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCheckIntervalMinutes: %w", err)
+	}
+	return oldValue.CheckIntervalMinutes, nil
+}
+
+// AddCheckIntervalMinutes adds i to the "check_interval_minutes" field.
+func (m *ScheduleMutation) AddCheckIntervalMinutes(i int) {
+	if m.addcheck_interval_minutes != nil {
+		*m.addcheck_interval_minutes += i
+	} else {
+		m.addcheck_interval_minutes = &i
+	}
+}
+
+// AddedCheckIntervalMinutes returns the value that was added to the "check_interval_minutes" field in this mutation.
+func (m *ScheduleMutation) AddedCheckIntervalMinutes() (r int, exists bool) {
+	v := m.addcheck_interval_minutes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCheckIntervalMinutes resets all changes to the "check_interval_minutes" field.
+func (m *ScheduleMutation) ResetCheckIntervalMinutes() {
+	m.check_interval_minutes = nil
+	m.addcheck_interval_minutes = nil
+}
+
 // SetEnabled sets the "enabled" field.
 func (m *ScheduleMutation) SetEnabled(b bool) {
 	m.enabled = &b
@@ -1193,7 +1251,7 @@ func (m *ScheduleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ScheduleMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.name != nil {
 		fields = append(fields, schedule.FieldName)
 	}
@@ -1214,6 +1272,9 @@ func (m *ScheduleMutation) Fields() []string {
 	}
 	if m.minute != nil {
 		fields = append(fields, schedule.FieldMinute)
+	}
+	if m.check_interval_minutes != nil {
+		fields = append(fields, schedule.FieldCheckIntervalMinutes)
 	}
 	if m.enabled != nil {
 		fields = append(fields, schedule.FieldEnabled)
@@ -1249,6 +1310,8 @@ func (m *ScheduleMutation) Field(name string) (ent.Value, bool) {
 		return m.Hour()
 	case schedule.FieldMinute:
 		return m.Minute()
+	case schedule.FieldCheckIntervalMinutes:
+		return m.CheckIntervalMinutes()
 	case schedule.FieldEnabled:
 		return m.Enabled()
 	case schedule.FieldCreator:
@@ -1280,6 +1343,8 @@ func (m *ScheduleMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldHour(ctx)
 	case schedule.FieldMinute:
 		return m.OldMinute(ctx)
+	case schedule.FieldCheckIntervalMinutes:
+		return m.OldCheckIntervalMinutes(ctx)
 	case schedule.FieldEnabled:
 		return m.OldEnabled(ctx)
 	case schedule.FieldCreator:
@@ -1346,6 +1411,13 @@ func (m *ScheduleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetMinute(v)
 		return nil
+	case schedule.FieldCheckIntervalMinutes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCheckIntervalMinutes(v)
+		return nil
 	case schedule.FieldEnabled:
 		v, ok := value.(bool)
 		if !ok {
@@ -1388,6 +1460,9 @@ func (m *ScheduleMutation) AddedFields() []string {
 	if m.addminute != nil {
 		fields = append(fields, schedule.FieldMinute)
 	}
+	if m.addcheck_interval_minutes != nil {
+		fields = append(fields, schedule.FieldCheckIntervalMinutes)
+	}
 	return fields
 }
 
@@ -1400,6 +1475,8 @@ func (m *ScheduleMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedHour()
 	case schedule.FieldMinute:
 		return m.AddedMinute()
+	case schedule.FieldCheckIntervalMinutes:
+		return m.AddedCheckIntervalMinutes()
 	}
 	return nil, false
 }
@@ -1422,6 +1499,13 @@ func (m *ScheduleMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddMinute(v)
+		return nil
+	case schedule.FieldCheckIntervalMinutes:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCheckIntervalMinutes(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Schedule numeric field %s", name)
@@ -1470,6 +1554,9 @@ func (m *ScheduleMutation) ResetField(name string) error {
 		return nil
 	case schedule.FieldMinute:
 		m.ResetMinute()
+		return nil
+	case schedule.FieldCheckIntervalMinutes:
+		m.ResetCheckIntervalMinutes()
 		return nil
 	case schedule.FieldEnabled:
 		m.ResetEnabled()

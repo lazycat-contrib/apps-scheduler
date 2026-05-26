@@ -35,6 +35,5 @@ logs/
 Thumbs.db
 
 # Build
-go.sum
 *.lpk
 apps-scheduler

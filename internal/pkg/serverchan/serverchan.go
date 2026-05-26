@@ -37,6 +37,9 @@ func (c *Client) SendAppOperation(appTitle, operation string, success bool) erro
 	case "pause":
 		title = fmt.Sprintf("应用休眠%s: %s", status, appTitle)
 		content = fmt.Sprintf("应用 **%s** 定时休眠任务执行%s", appTitle, status)
+	case "keep_running":
+		title = fmt.Sprintf("应用保持运行%s: %s", status, appTitle)
+		content = fmt.Sprintf("应用 **%s** 保持运行任务执行%s", appTitle, status)
 	default:
 		title = fmt.Sprintf("应用操作%s: %s", status, appTitle)
 		content = fmt.Sprintf("应用 **%s** 操作执行%s", appTitle, status)

@@ -9,19 +9,24 @@ import (
 	"time"
 
 	"apps-scheduler/internal/ent"
+	"apps-scheduler/internal/ent/schedule"
 	"apps-scheduler/internal/pkg/serverchan"
 
 	gohelper "gitee.com/linakesi/lzc-sdk/lang/go"
 	"gitee.com/linakesi/lzc-sdk/lang/go/sys"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/metadata"
 )
 
+const defaultKeepRunningIntervalMinutes = 5
+
 type Scheduler struct {
-	useCase *UseCase
-	stopCh  chan struct{}
-	wg      sync.WaitGroup
-	loc     *time.Location // Timezone location for all time operations
+	useCase               *UseCase
+	stopCh                chan struct{}
+	wg                    sync.WaitGroup
+	loc                   *time.Location // Timezone location for all time operations
+	lastKeepRunningChecks map[uuid.UUID]time.Time
 }
 
 func NewScheduler(useCase *UseCase) *Scheduler {
@@ -41,9 +46,10 @@ func NewScheduler(useCase *UseCase) *Scheduler {
 	}
 
 	return &Scheduler{
-		useCase: useCase,
-		stopCh:  make(chan struct{}),
-		loc:     loc,
+		useCase:               useCase,
+		stopCh:                make(chan struct{}),
+		loc:                   loc,
+		lastKeepRunningChecks: make(map[uuid.UUID]time.Time),
 	}
 }
 
@@ -99,14 +105,48 @@ func (s *Scheduler) checkAndExecute() {
 		return
 	}
 
+	activeKeepRunningSchedules := make(map[uuid.UUID]struct{})
 	for _, sch := range schedules {
-		if s.shouldExecute(sch, weekday, hour, minute) {
-			go s.executeSchedule(ctx, sch)
+		switch sch.Operation {
+		case schedule.OperationKeepRunning:
+			activeKeepRunningSchedules[sch.ID] = struct{}{}
+			if s.shouldCheckKeepRunning(sch, now) {
+				go s.executeSchedule(ctx, sch)
+			}
+		default:
+			if s.shouldExecute(sch, weekday, hour, minute) {
+				go s.executeSchedule(ctx, sch)
+			}
+		}
+	}
+
+	for id := range s.lastKeepRunningChecks {
+		if _, ok := activeKeepRunningSchedules[id]; !ok {
+			delete(s.lastKeepRunningChecks, id)
 		}
 	}
 }
 
+func (s *Scheduler) shouldCheckKeepRunning(sch *ent.Schedule, now time.Time) bool {
+	intervalMinutes := sch.CheckIntervalMinutes
+	if intervalMinutes <= 0 {
+		intervalMinutes = defaultKeepRunningIntervalMinutes
+	}
+
+	lastCheck, ok := s.lastKeepRunningChecks[sch.ID]
+	if ok && now.Sub(lastCheck) < time.Duration(intervalMinutes)*time.Minute {
+		return false
+	}
+
+	s.lastKeepRunningChecks[sch.ID] = now
+	return true
+}
+
 func (s *Scheduler) shouldExecute(sch *ent.Schedule, weekday, hour, minute int) bool {
+	if sch.Operation == schedule.OperationKeepRunning {
+		return false
+	}
+
 	if sch.Hour != hour || sch.Minute != minute {
 		return false
 	}
@@ -121,14 +161,25 @@ func (s *Scheduler) executeSchedule(ctx context.Context, sch *ent.Schedule) {
 		Str("operation", string(sch.Operation)).
 		Msg("Executing scheduled task")
 
+	attempted := true
 	var err error
 	switch sch.Operation {
-	case "resume":
+	case schedule.OperationResume:
 		err = s.resumeApp(ctx, sch.AppID, sch.Creator)
-	case "pause":
+	case schedule.OperationPause:
 		err = s.pauseApp(ctx, sch.AppID, sch.Creator)
+	case schedule.OperationKeepRunning:
+		attempted, err = s.keepAppRunning(ctx, sch.AppID, sch.Creator)
 	default:
 		log.Warn().Str("operation", string(sch.Operation)).Msg("Unknown operation")
+		return
+	}
+
+	if !attempted {
+		log.Debug().
+			Str("schedule_id", sch.ID.String()).
+			Str("app_id", sch.AppID).
+			Msg("Application is already running; keep-running task skipped resume")
 		return
 	}
 
@@ -149,13 +200,22 @@ func (s *Scheduler) executeSchedule(ctx context.Context, sch *ent.Schedule) {
 	s.sendNotification(ctx, sch, success)
 }
 
+func (s *Scheduler) keepAppRunning(ctx context.Context, appID, userID string) (bool, error) {
+	return s.resumeAppIfNeeded(ctx, appID, userID, false)
+}
+
 func (s *Scheduler) resumeApp(ctx context.Context, appID, userID string) error {
+	_, err := s.resumeAppIfNeeded(ctx, appID, userID, true)
+	return err
+}
+
+func (s *Scheduler) resumeAppIfNeeded(ctx context.Context, appID, userID string, alreadyRunningIsSuccess bool) (bool, error) {
 	ctx = metadata.AppendToOutgoingContext(ctx, "x-hc-user-id", userID)
 
 	gw, err := gohelper.NewAPIGateway(ctx)
 	if err != nil {
 		log.Error().Err(err).Str("app_id", appID).Msg("Failed to create API gateway")
-		return err
+		return true, err
 	}
 	defer gw.Close()
 
@@ -165,13 +225,13 @@ func (s *Scheduler) resumeApp(ctx context.Context, appID, userID string) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Str("app_id", appID).Msg("Failed to query application status")
-		return err
+		return true, err
 	}
 
 	// 检查应用是否存在
 	if len(resp.InfoList) == 0 {
 		log.Warn().Str("app_id", appID).Msg("Application not found")
-		return fmt.Errorf("application %s not found", appID)
+		return true, fmt.Errorf("application %s not found", appID)
 	}
 
 	appInfo := resp.InfoList[0]
@@ -187,19 +247,19 @@ func (s *Scheduler) resumeApp(ctx context.Context, appID, userID string) error {
 			Str("app_id", appID).
 			Str("status", appInfo.Status.String()).
 			Msg("Application is not installed, cannot start")
-		return fmt.Errorf("application %s is not installed (status: %s)", appID, appInfo.Status.String())
+		return true, fmt.Errorf("application %s is not installed (status: %s)", appID, appInfo.Status.String())
 	}
 
 	// 如果应用已经在运行，直接返回成功
 	if appInfo.InstanceStatus == sys.InstanceStatus_Status_Running {
 		log.Info().Str("app_id", appID).Msg("Application is already running")
-		return nil
+		return alreadyRunningIsSuccess, nil
 	}
 
 	// 如果应用正在恢复中，等待一下
 	if appInfo.InstanceStatus == sys.InstanceStatus_Status_Starting {
 		log.Info().Str("app_id", appID).Msg("Application is already starting, waiting...")
-		return nil
+		return alreadyRunningIsSuccess, nil
 	}
 
 	// 调用 Resume 恢复应用
@@ -213,11 +273,11 @@ func (s *Scheduler) resumeApp(ctx context.Context, appID, userID string) error {
 			Str("app_id", appID).
 			Str("instance_status", appInfo.InstanceStatus.String()).
 			Msg("Failed to resume application")
-		return err
+		return true, err
 	}
 
 	log.Info().Str("app_id", appID).Msg("Successfully called Resume for application")
-	return nil
+	return true, nil
 }
 
 func (s *Scheduler) pauseApp(ctx context.Context, appID, userID string) error {

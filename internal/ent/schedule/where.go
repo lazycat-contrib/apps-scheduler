@@ -80,6 +80,11 @@ func Minute(v int) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldMinute, v))
 }
 
+// CheckIntervalMinutes applies equality check predicate on the "check_interval_minutes" field. It's identical to CheckIntervalMinutesEQ.
+func CheckIntervalMinutes(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEQ(FieldCheckIntervalMinutes, v))
+}
+
 // Enabled applies equality check predicate on the "enabled" field. It's identical to EnabledEQ.
 func Enabled(v bool) predicate.Schedule {
 	return predicate.Schedule(sql.FieldEQ(FieldEnabled, v))
@@ -393,6 +398,46 @@ func MinuteLT(v int) predicate.Schedule {
 // MinuteLTE applies the LTE predicate on the "minute" field.
 func MinuteLTE(v int) predicate.Schedule {
 	return predicate.Schedule(sql.FieldLTE(FieldMinute, v))
+}
+
+// CheckIntervalMinutesEQ applies the EQ predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesEQ(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldEQ(FieldCheckIntervalMinutes, v))
+}
+
+// CheckIntervalMinutesNEQ applies the NEQ predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesNEQ(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldNEQ(FieldCheckIntervalMinutes, v))
+}
+
+// CheckIntervalMinutesIn applies the In predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesIn(vs ...int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldIn(FieldCheckIntervalMinutes, vs...))
+}
+
+// CheckIntervalMinutesNotIn applies the NotIn predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesNotIn(vs ...int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldNotIn(FieldCheckIntervalMinutes, vs...))
+}
+
+// CheckIntervalMinutesGT applies the GT predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesGT(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldGT(FieldCheckIntervalMinutes, v))
+}
+
+// CheckIntervalMinutesGTE applies the GTE predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesGTE(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldGTE(FieldCheckIntervalMinutes, v))
+}
+
+// CheckIntervalMinutesLT applies the LT predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesLT(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldLT(FieldCheckIntervalMinutes, v))
+}
+
+// CheckIntervalMinutesLTE applies the LTE predicate on the "check_interval_minutes" field.
+func CheckIntervalMinutesLTE(v int) predicate.Schedule {
+	return predicate.Schedule(sql.FieldLTE(FieldCheckIntervalMinutes, v))
 }
 
 // EnabledEQ applies the EQ predicate on the "enabled" field.

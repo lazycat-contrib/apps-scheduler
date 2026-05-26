@@ -33,6 +33,8 @@ type Schedule struct {
 	Hour int `json:"hour,omitempty"`
 	// Minute holds the value of the "minute" field.
 	Minute int `json:"minute,omitempty"`
+	// CheckIntervalMinutes holds the value of the "check_interval_minutes" field.
+	CheckIntervalMinutes int `json:"check_interval_minutes,omitempty"`
 	// Enabled holds the value of the "enabled" field.
 	Enabled bool `json:"enabled,omitempty"`
 	// Creator holds the value of the "creator" field.
@@ -53,7 +55,7 @@ func (*Schedule) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case schedule.FieldEnabled:
 			values[i] = new(sql.NullBool)
-		case schedule.FieldHour, schedule.FieldMinute:
+		case schedule.FieldHour, schedule.FieldMinute, schedule.FieldCheckIntervalMinutes:
 			values[i] = new(sql.NullInt64)
 		case schedule.FieldName, schedule.FieldAppID, schedule.FieldAppTitle, schedule.FieldOperation, schedule.FieldCreator:
 			values[i] = new(sql.NullString)
@@ -125,6 +127,12 @@ func (_m *Schedule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field minute", values[i])
 			} else if value.Valid {
 				_m.Minute = int(value.Int64)
+			}
+		case schedule.FieldCheckIntervalMinutes:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field check_interval_minutes", values[i])
+			} else if value.Valid {
+				_m.CheckIntervalMinutes = int(value.Int64)
 			}
 		case schedule.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -206,6 +214,9 @@ func (_m *Schedule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("minute=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Minute))
+	builder.WriteString(", ")
+	builder.WriteString("check_interval_minutes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CheckIntervalMinutes))
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))

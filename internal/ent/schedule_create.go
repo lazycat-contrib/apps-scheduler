@@ -95,6 +95,20 @@ func (_c *ScheduleCreate) SetNillableMinute(v *int) *ScheduleCreate {
 	return _c
 }
 
+// SetCheckIntervalMinutes sets the "check_interval_minutes" field.
+func (_c *ScheduleCreate) SetCheckIntervalMinutes(v int) *ScheduleCreate {
+	_c.mutation.SetCheckIntervalMinutes(v)
+	return _c
+}
+
+// SetNillableCheckIntervalMinutes sets the "check_interval_minutes" field if the given value is not nil.
+func (_c *ScheduleCreate) SetNillableCheckIntervalMinutes(v *int) *ScheduleCreate {
+	if v != nil {
+		_c.SetCheckIntervalMinutes(*v)
+	}
+	return _c
+}
+
 // SetEnabled sets the "enabled" field.
 func (_c *ScheduleCreate) SetEnabled(v bool) *ScheduleCreate {
 	_c.mutation.SetEnabled(v)
@@ -212,6 +226,10 @@ func (_c *ScheduleCreate) defaults() {
 		v := schedule.DefaultMinute
 		_c.mutation.SetMinute(v)
 	}
+	if _, ok := _c.mutation.CheckIntervalMinutes(); !ok {
+		v := schedule.DefaultCheckIntervalMinutes
+		_c.mutation.SetCheckIntervalMinutes(v)
+	}
 	if _, ok := _c.mutation.Enabled(); !ok {
 		v := schedule.DefaultEnabled
 		_c.mutation.SetEnabled(v)
@@ -276,6 +294,14 @@ func (_c *ScheduleCreate) check() error {
 	if v, ok := _c.mutation.Minute(); ok {
 		if err := schedule.MinuteValidator(v); err != nil {
 			return &ValidationError{Name: "minute", err: fmt.Errorf(`ent: validator failed for field "Schedule.minute": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.CheckIntervalMinutes(); !ok {
+		return &ValidationError{Name: "check_interval_minutes", err: errors.New(`ent: missing required field "Schedule.check_interval_minutes"`)}
+	}
+	if v, ok := _c.mutation.CheckIntervalMinutes(); ok {
+		if err := schedule.CheckIntervalMinutesValidator(v); err != nil {
+			return &ValidationError{Name: "check_interval_minutes", err: fmt.Errorf(`ent: validator failed for field "Schedule.check_interval_minutes": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Enabled(); !ok {
@@ -352,6 +378,10 @@ func (_c *ScheduleCreate) createSpec() (*Schedule, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Minute(); ok {
 		_spec.SetField(schedule.FieldMinute, field.TypeInt, value)
 		_node.Minute = value
+	}
+	if value, ok := _c.mutation.CheckIntervalMinutes(); ok {
+		_spec.SetField(schedule.FieldCheckIntervalMinutes, field.TypeInt, value)
+		_node.CheckIntervalMinutes = value
 	}
 	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(schedule.FieldEnabled, field.TypeBool, value)

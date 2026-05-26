@@ -48,7 +48,7 @@ func (u *UseCase) Client() *ent.Client {
 
 // Schedule operations
 
-func (u *UseCase) CreateSchedule(ctx context.Context, name, appID, appTitle, operation, creator string, weekDays []int, hour, minute int) (*ent.Schedule, error) {
+func (u *UseCase) CreateSchedule(ctx context.Context, name, appID, appTitle, operation, creator string, weekDays []int, hour, minute, checkIntervalMinutes int) (*ent.Schedule, error) {
 	return u.client.Schedule.Create().
 		SetName(name).
 		SetAppID(appID).
@@ -57,6 +57,7 @@ func (u *UseCase) CreateSchedule(ctx context.Context, name, appID, appTitle, ope
 		SetWeekDays(weekDays).
 		SetHour(hour).
 		SetMinute(minute).
+		SetCheckIntervalMinutes(checkIntervalMinutes).
 		SetCreator(creator).
 		SetEnabled(true).
 		Save(ctx)
@@ -79,7 +80,7 @@ func (u *UseCase) ListSchedulesByUser(ctx context.Context, userID string) ([]*en
 		All(ctx)
 }
 
-func (u *UseCase) UpdateSchedule(ctx context.Context, id uuid.UUID, name, appID, appTitle, operation string, weekDays []int, hour, minute int, enabled bool) (*ent.Schedule, error) {
+func (u *UseCase) UpdateSchedule(ctx context.Context, id uuid.UUID, name, appID, appTitle, operation string, weekDays []int, hour, minute, checkIntervalMinutes int, enabled bool) (*ent.Schedule, error) {
 	return u.client.Schedule.UpdateOneID(id).
 		SetName(name).
 		SetAppID(appID).
@@ -88,6 +89,7 @@ func (u *UseCase) UpdateSchedule(ctx context.Context, id uuid.UUID, name, appID,
 		SetWeekDays(weekDays).
 		SetHour(hour).
 		SetMinute(minute).
+		SetCheckIntervalMinutes(checkIntervalMinutes).
 		SetEnabled(enabled).
 		Save(ctx)
 }

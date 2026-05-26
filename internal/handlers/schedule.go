@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -21,30 +22,42 @@ func NewScheduleHandler(useCase *biz.UseCase) *ScheduleHandler {
 }
 
 type ScheduleRequest struct {
-	Name      string `json:"name"`
-	AppID     string `json:"appId"`
-	AppTitle  string `json:"appTitle"`
-	Operation string `json:"operation"`
-	WeekDays  []int  `json:"weekDays"`
-	Hour      int    `json:"hour"`
-	Minute    int    `json:"minute"`
-	Enabled   *bool  `json:"enabled,omitempty"`
+	Name                 string `json:"name"`
+	AppID                string `json:"appId"`
+	AppTitle             string `json:"appTitle"`
+	Operation            string `json:"operation"`
+	WeekDays             []int  `json:"weekDays"`
+	Hour                 int    `json:"hour"`
+	Minute               int    `json:"minute"`
+	CheckIntervalMinutes int    `json:"checkIntervalMinutes"`
+	Enabled              *bool  `json:"enabled,omitempty"`
 }
 
 type ScheduleResponse struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	AppID     string    `json:"appId"`
-	AppTitle  string    `json:"appTitle"`
-	Operation string    `json:"operation"`
-	WeekDays  []int     `json:"weekDays"`
-	Hour      int       `json:"hour"`
-	Minute    int       `json:"minute"`
-	Enabled   bool      `json:"enabled"`
-	Creator   string    `json:"creator"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID                   string    `json:"id"`
+	Name                 string    `json:"name"`
+	AppID                string    `json:"appId"`
+	AppTitle             string    `json:"appTitle"`
+	Operation            string    `json:"operation"`
+	WeekDays             []int     `json:"weekDays"`
+	Hour                 int       `json:"hour"`
+	Minute               int       `json:"minute"`
+	CheckIntervalMinutes int       `json:"checkIntervalMinutes"`
+	Enabled              bool      `json:"enabled"`
+	Creator              string    `json:"creator"`
+	CreatedAt            time.Time `json:"createdAt"`
+	UpdatedAt            time.Time `json:"updatedAt"`
 }
+
+const (
+	operationResume      = "resume"
+	operationPause       = "pause"
+	operationKeepRunning = "keep_running"
+
+	defaultCheckIntervalMinutes = 5
+	minCheckIntervalMinutes     = 1
+	maxCheckIntervalMinutes     = 1440
+)
 
 func (h *ScheduleHandler) ListSchedules(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -58,18 +71,19 @@ func (h *ScheduleHandler) ListSchedules(c echo.Context) error {
 	response := make([]ScheduleResponse, 0, len(schedules))
 	for _, sch := range schedules {
 		response = append(response, ScheduleResponse{
-			ID:        sch.ID.String(),
-			Name:      sch.Name,
-			AppID:     sch.AppID,
-			AppTitle:  sch.AppTitle,
-			Operation: string(sch.Operation),
-			WeekDays:  sch.WeekDays,
-			Hour:      sch.Hour,
-			Minute:    sch.Minute,
-			Enabled:   sch.Enabled,
-			Creator:   sch.Creator,
-			CreatedAt: sch.CreatedAt,
-			UpdatedAt: sch.UpdatedAt,
+			ID:                   sch.ID.String(),
+			Name:                 sch.Name,
+			AppID:                sch.AppID,
+			AppTitle:             sch.AppTitle,
+			Operation:            string(sch.Operation),
+			WeekDays:             sch.WeekDays,
+			Hour:                 sch.Hour,
+			Minute:               sch.Minute,
+			CheckIntervalMinutes: sch.CheckIntervalMinutes,
+			Enabled:              sch.Enabled,
+			Creator:              sch.Creator,
+			CreatedAt:            sch.CreatedAt,
+			UpdatedAt:            sch.UpdatedAt,
 		})
 	}
 
@@ -85,19 +99,11 @@ func (h *ScheduleHandler) CreateSchedule(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
-	if req.Name == "" || req.AppID == "" || req.Operation == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Name, appId, and operation are required"})
+	if err := validateScheduleRequest(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
-	if req.Operation != "resume" && req.Operation != "pause" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Operation must be 'resume' or 'pause'"})
-	}
-
-	if len(req.WeekDays) == 0 {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "At least one weekday is required"})
-	}
-
-	sch, err := h.useCase.CreateSchedule(ctx, req.Name, req.AppID, req.AppTitle, req.Operation, userID, req.WeekDays, req.Hour, req.Minute)
+	sch, err := h.useCase.CreateSchedule(ctx, req.Name, req.AppID, req.AppTitle, req.Operation, userID, req.WeekDays, req.Hour, req.Minute, req.CheckIntervalMinutes)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create schedule")
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create schedule"})
@@ -106,18 +112,19 @@ func (h *ScheduleHandler) CreateSchedule(c echo.Context) error {
 	log.Info().Str("schedule_id", sch.ID.String()).Str("user_id", userID).Msg("Schedule created")
 
 	return c.JSON(http.StatusCreated, ScheduleResponse{
-		ID:        sch.ID.String(),
-		Name:      sch.Name,
-		AppID:     sch.AppID,
-		AppTitle:  sch.AppTitle,
-		Operation: string(sch.Operation),
-		WeekDays:  sch.WeekDays,
-		Hour:      sch.Hour,
-		Minute:    sch.Minute,
-		Enabled:   sch.Enabled,
-		Creator:   sch.Creator,
-		CreatedAt: sch.CreatedAt,
-		UpdatedAt: sch.UpdatedAt,
+		ID:                   sch.ID.String(),
+		Name:                 sch.Name,
+		AppID:                sch.AppID,
+		AppTitle:             sch.AppTitle,
+		Operation:            string(sch.Operation),
+		WeekDays:             sch.WeekDays,
+		Hour:                 sch.Hour,
+		Minute:               sch.Minute,
+		CheckIntervalMinutes: sch.CheckIntervalMinutes,
+		Enabled:              sch.Enabled,
+		Creator:              sch.Creator,
+		CreatedAt:            sch.CreatedAt,
+		UpdatedAt:            sch.UpdatedAt,
 	})
 }
 
@@ -147,8 +154,8 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
-	if req.Name == "" || req.AppID == "" || req.Operation == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Name, appId, and operation are required"})
+	if err := validateScheduleRequest(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}
 
 	enabled := existing.Enabled
@@ -156,7 +163,7 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 		enabled = *req.Enabled
 	}
 
-	sch, err := h.useCase.UpdateSchedule(ctx, id, req.Name, req.AppID, req.AppTitle, req.Operation, req.WeekDays, req.Hour, req.Minute, enabled)
+	sch, err := h.useCase.UpdateSchedule(ctx, id, req.Name, req.AppID, req.AppTitle, req.Operation, req.WeekDays, req.Hour, req.Minute, req.CheckIntervalMinutes, enabled)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to update schedule")
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to update schedule"})
@@ -165,18 +172,19 @@ func (h *ScheduleHandler) UpdateSchedule(c echo.Context) error {
 	log.Info().Str("schedule_id", sch.ID.String()).Str("user_id", userID).Msg("Schedule updated")
 
 	return c.JSON(http.StatusOK, ScheduleResponse{
-		ID:        sch.ID.String(),
-		Name:      sch.Name,
-		AppID:     sch.AppID,
-		AppTitle:  sch.AppTitle,
-		Operation: string(sch.Operation),
-		WeekDays:  sch.WeekDays,
-		Hour:      sch.Hour,
-		Minute:    sch.Minute,
-		Enabled:   sch.Enabled,
-		Creator:   sch.Creator,
-		CreatedAt: sch.CreatedAt,
-		UpdatedAt: sch.UpdatedAt,
+		ID:                   sch.ID.String(),
+		Name:                 sch.Name,
+		AppID:                sch.AppID,
+		AppTitle:             sch.AppTitle,
+		Operation:            string(sch.Operation),
+		WeekDays:             sch.WeekDays,
+		Hour:                 sch.Hour,
+		Minute:               sch.Minute,
+		CheckIntervalMinutes: sch.CheckIntervalMinutes,
+		Enabled:              sch.Enabled,
+		Creator:              sch.Creator,
+		CreatedAt:            sch.CreatedAt,
+		UpdatedAt:            sch.UpdatedAt,
 	})
 }
 
@@ -241,17 +249,52 @@ func (h *ScheduleHandler) ToggleSchedule(c echo.Context) error {
 	log.Info().Str("schedule_id", sch.ID.String()).Bool("enabled", sch.Enabled).Msg("Schedule toggled")
 
 	return c.JSON(http.StatusOK, ScheduleResponse{
-		ID:        sch.ID.String(),
-		Name:      sch.Name,
-		AppID:     sch.AppID,
-		AppTitle:  sch.AppTitle,
-		Operation: string(sch.Operation),
-		WeekDays:  sch.WeekDays,
-		Hour:      sch.Hour,
-		Minute:    sch.Minute,
-		Enabled:   sch.Enabled,
-		Creator:   sch.Creator,
-		CreatedAt: sch.CreatedAt,
-		UpdatedAt: sch.UpdatedAt,
+		ID:                   sch.ID.String(),
+		Name:                 sch.Name,
+		AppID:                sch.AppID,
+		AppTitle:             sch.AppTitle,
+		Operation:            string(sch.Operation),
+		WeekDays:             sch.WeekDays,
+		Hour:                 sch.Hour,
+		Minute:               sch.Minute,
+		CheckIntervalMinutes: sch.CheckIntervalMinutes,
+		Enabled:              sch.Enabled,
+		Creator:              sch.Creator,
+		CreatedAt:            sch.CreatedAt,
+		UpdatedAt:            sch.UpdatedAt,
 	})
+}
+
+func validateScheduleRequest(req *ScheduleRequest) error {
+	if req.Name == "" || req.AppID == "" || req.Operation == "" {
+		return errors.New("Name, appId, and operation are required")
+	}
+
+	switch req.Operation {
+	case operationResume, operationPause:
+		if len(req.WeekDays) == 0 {
+			return errors.New("At least one weekday is required")
+		}
+		if req.Hour < 0 || req.Hour > 23 {
+			return errors.New("Hour must be between 0 and 23")
+		}
+		if req.Minute < 0 || req.Minute > 59 {
+			return errors.New("Minute must be between 0 and 59")
+		}
+		req.CheckIntervalMinutes = defaultCheckIntervalMinutes
+	case operationKeepRunning:
+		req.WeekDays = []int{}
+		req.Hour = 0
+		req.Minute = 0
+		if req.CheckIntervalMinutes == 0 {
+			req.CheckIntervalMinutes = defaultCheckIntervalMinutes
+		}
+		if req.CheckIntervalMinutes < minCheckIntervalMinutes || req.CheckIntervalMinutes > maxCheckIntervalMinutes {
+			return errors.New("Check interval must be between 1 and 1440 minutes")
+		}
+	default:
+		return errors.New("Operation must be 'resume', 'pause', or 'keep_running'")
+	}
+
+	return nil
 }

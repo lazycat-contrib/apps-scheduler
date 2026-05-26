@@ -29,6 +29,8 @@ const (
 	FieldHour = "hour"
 	// FieldMinute holds the string denoting the minute field in the database.
 	FieldMinute = "minute"
+	// FieldCheckIntervalMinutes holds the string denoting the check_interval_minutes field in the database.
+	FieldCheckIntervalMinutes = "check_interval_minutes"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
 	// FieldCreator holds the string denoting the creator field in the database.
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldWeekDays,
 	FieldHour,
 	FieldMinute,
+	FieldCheckIntervalMinutes,
 	FieldEnabled,
 	FieldCreator,
 	FieldCreatedAt,
@@ -84,6 +87,10 @@ var (
 	DefaultMinute int
 	// MinuteValidator is a validator for the "minute" field. It is called by the builders before save.
 	MinuteValidator func(int) error
+	// DefaultCheckIntervalMinutes holds the default value on creation for the "check_interval_minutes" field.
+	DefaultCheckIntervalMinutes int
+	// CheckIntervalMinutesValidator is a validator for the "check_interval_minutes" field. It is called by the builders before save.
+	CheckIntervalMinutesValidator func(int) error
 	// DefaultEnabled holds the default value on creation for the "enabled" field.
 	DefaultEnabled bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -104,8 +111,9 @@ const DefaultOperation = OperationPause
 
 // Operation values.
 const (
-	OperationResume Operation = "resume"
-	OperationPause  Operation = "pause"
+	OperationResume      Operation = "resume"
+	OperationPause       Operation = "pause"
+	OperationKeepRunning Operation = "keep_running"
 )
 
 func (o Operation) String() string {
@@ -115,7 +123,7 @@ func (o Operation) String() string {
 // OperationValidator is a validator for the "operation" field enum values. It is called by the builders before save.
 func OperationValidator(o Operation) error {
 	switch o {
-	case OperationResume, OperationPause:
+	case OperationResume, OperationPause, OperationKeepRunning:
 		return nil
 	default:
 		return fmt.Errorf("schedule: invalid enum value for operation field: %q", o)
@@ -158,6 +166,11 @@ func ByHour(opts ...sql.OrderTermOption) OrderOption {
 // ByMinute orders the results by the minute field.
 func ByMinute(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMinute, opts...).ToFunc()
+}
+
+// ByCheckIntervalMinutes orders the results by the check_interval_minutes field.
+func ByCheckIntervalMinutes(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCheckIntervalMinutes, opts...).ToFunc()
 }
 
 // ByEnabled orders the results by the enabled field.

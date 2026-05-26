@@ -55,7 +55,7 @@ const i18n = {
     control_center: '控制中心',
 
     // Login
-    login_subtitle: '登录以管理您的定时任务',
+    login_subtitle: '登录以管理您的自动任务',
     login_with_lazycat: '使用懒猫账号登录',
     login_hint: '您需要使用懒猫微服账号登录',
 
@@ -74,19 +74,27 @@ const i18n = {
     multi_instance: '多实例',
 
     // Schedules section
-    scheduled_tasks: '定时任务',
+    scheduled_tasks: '自动任务',
     new_task: '新建任务',
-    no_schedules: '暂无定时任务',
-    no_schedules_hint: '点击上方按钮创建您的第一个定时任务',
+    no_schedules: '暂无自动任务',
+    no_schedules_hint: '点击上方按钮创建您的第一个自动任务',
     task_name: '任务名称',
     task_name_placeholder: '例如：晚间关闭下载器',
     select_app: '选择应用',
     select_app_placeholder: '请选择应用...',
+    task_type: '任务类型',
+    task_type_timed: '定时执行',
+    task_type_keep_running: '保持运行',
     operation: '操作',
     operation_resume: '恢复应用',
     operation_pause: '休眠应用',
+    operation_keep_running: '保持运行',
     exec_time: '执行时间',
     repeat_days: '重复日期',
+    check_interval: '检查间隔',
+    interval_unit_minutes: '分钟',
+    monitor_every: '每 {minutes} 分钟检查',
+    monitor_disabled: '守护已禁用',
     days: ['日', '一', '二', '三', '四', '五', '六'],
 
     // Settings
@@ -105,7 +113,7 @@ const i18n = {
     send_test: '发送测试',
     about: '关于',
     version: '版本',
-    about_desc: '定时恢复和休眠懒猫微服上的应用，支持自定义调度计划和推送通知。',
+    about_desc: '定时恢复、休眠和保持运行懒猫微服上的应用，支持自定义调度计划和推送通知。',
 
     // Toast messages
     toast_save_success: '设置已保存',
@@ -119,6 +127,7 @@ const i18n = {
     toast_app_paused: '应用休眠中',
     toast_load_failed: '加载失败',
     toast_select_day: '请至少选择一天',
+    toast_interval_invalid: '检查间隔至少 1 分钟',
     confirm_delete: '确定要删除吗？',
     next_run: '下次执行',
     countdown_prefix: '将在',
@@ -127,6 +136,7 @@ const i18n = {
     countdown_hours: '时',
     countdown_minutes: '分',
     countdown_seconds: '秒',
+    countdown_now: '即将执行...',
     countdown_disabled: '已禁用',
   },
 
@@ -144,7 +154,7 @@ const i18n = {
 
     control_center: 'Control Center',
 
-    login_subtitle: 'Sign in to manage your scheduled tasks',
+    login_subtitle: 'Sign in to manage your automation tasks',
     login_with_lazycat: 'Sign in with LazyCat',
     login_hint: 'You need to sign in with your LazyCat account',
 
@@ -161,19 +171,27 @@ const i18n = {
     status_error: 'Error',
     multi_instance: 'Multi-Instance',
 
-    scheduled_tasks: 'Scheduled Tasks',
+    scheduled_tasks: 'Automation Tasks',
     new_task: 'New Task',
-    no_schedules: 'No scheduled tasks',
+    no_schedules: 'No automation tasks',
     no_schedules_hint: 'Click the button above to create your first task',
     task_name: 'Task Name',
     task_name_placeholder: 'e.g., Stop downloader at night',
     select_app: 'Select App',
     select_app_placeholder: 'Please select an app...',
+    task_type: 'Task Type',
+    task_type_timed: 'Timed',
+    task_type_keep_running: 'Keep Running',
     operation: 'Operation',
     operation_resume: 'Resume App',
     operation_pause: 'Pause App',
+    operation_keep_running: 'Keep Running',
     exec_time: 'Execution Time',
     repeat_days: 'Repeat Days',
+    check_interval: 'Check Interval',
+    interval_unit_minutes: 'min',
+    monitor_every: 'Check every {minutes} min',
+    monitor_disabled: 'Monitor disabled',
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 
     system_config: 'System Config',
@@ -191,7 +209,7 @@ const i18n = {
     send_test: 'Send Test',
     about: 'About',
     version: 'Version',
-    about_desc: 'Schedule resume and pause operations for apps on LazyCat, with custom schedules and push notifications.',
+    about_desc: 'Schedule resume, pause, and keep-running operations for apps on LazyCat, with custom schedules and push notifications.',
 
     toast_save_success: 'Settings saved',
     toast_save_failed: 'Failed to save',
@@ -204,6 +222,7 @@ const i18n = {
     toast_app_paused: 'Pausing app',
     toast_load_failed: 'Failed to load',
     toast_select_day: 'Please select at least one day',
+    toast_interval_invalid: 'Check interval must be at least 1 minute',
     confirm_delete: 'Are you sure you want to delete?',
     next_run: 'Next run',
     countdown_prefix: 'in',
@@ -212,6 +231,7 @@ const i18n = {
     countdown_hours: 'h',
     countdown_minutes: 'm',
     countdown_seconds: 's',
+    countdown_now: 'Starting soon...',
     countdown_disabled: 'Disabled',
   },
 
@@ -246,7 +266,7 @@ const i18n = {
     status_error: 'エラー',
     multi_instance: 'マルチインスタンス',
 
-    scheduled_tasks: 'スケジュールタスク',
+    scheduled_tasks: '自動タスク',
     new_task: '新規タスク',
     no_schedules: 'タスクがありません',
     no_schedules_hint: '上のボタンをクリックして最初のタスクを作成',
@@ -254,11 +274,19 @@ const i18n = {
     task_name_placeholder: '例：夜間ダウンローダー停止',
     select_app: 'アプリを選択',
     select_app_placeholder: 'アプリを選択してください...',
+    task_type: 'タスク種別',
+    task_type_timed: '定時実行',
+    task_type_keep_running: '稼働維持',
     operation: '操作',
     operation_resume: 'アプリを再開',
     operation_pause: 'アプリを一時停止',
+    operation_keep_running: '稼働維持',
     exec_time: '実行時刻',
     repeat_days: '繰り返し',
+    check_interval: 'チェック間隔',
+    interval_unit_minutes: '分',
+    monitor_every: '{minutes}分ごとに確認',
+    monitor_disabled: '監視は無効です',
     days: ['日', '月', '火', '水', '木', '金', '土'],
 
     system_config: 'システム設定',
@@ -276,7 +304,7 @@ const i18n = {
     send_test: 'テスト送信',
     about: 'について',
     version: 'バージョン',
-    about_desc: 'LazyCat上のアプリを定期的に再開・一時停止し、カスタムスケジュールとプッシュ通知をサポート。',
+    about_desc: 'LazyCat上のアプリを定期的に再開・一時停止し、稼働維持も行います。カスタムスケジュールとプッシュ通知をサポート。',
 
     toast_save_success: '設定を保存しました',
     toast_save_failed: '保存に失敗しました',
@@ -289,6 +317,7 @@ const i18n = {
     toast_app_paused: 'アプリを一時停止中',
     toast_load_failed: '読み込みに失敗しました',
     toast_select_day: '少なくとも1日を選択してください',
+    toast_interval_invalid: 'チェック間隔は1分以上にしてください',
     confirm_delete: '削除してもよろしいですか？',
     next_run: '次回実行',
     countdown_prefix: '',
@@ -297,6 +326,7 @@ const i18n = {
     countdown_hours: '時間',
     countdown_minutes: '分',
     countdown_seconds: '秒',
+    countdown_now: 'まもなく実行...',
     countdown_disabled: '無効',
   }
 };
@@ -318,6 +348,12 @@ function t(key) {
   return i18n[currentLang][key] || i18n['zh'][key] || key;
 }
 
+function tf(key, values = {}) {
+  return Object.entries(values).reduce((text, [name, value]) => {
+    return text.split(`{${name}}`).join(value);
+  }, t(key));
+}
+
 function setLang(lang) {
   if (!i18n[lang]) return;
   currentLang = lang;
@@ -337,6 +373,13 @@ function applyTranslations() {
 }
 
 // ============ State ============
+const OP_RESUME = 'resume';
+const OP_PAUSE = 'pause';
+const OP_KEEP_RUNNING = 'keep_running';
+const TASK_TYPE_TIMED = 'timed';
+const TASK_TYPE_KEEP_RUNNING = 'keep_running';
+const DEFAULT_CHECK_INTERVAL_MINUTES = 5;
+
 let apps = [];
 let schedules = [];
 let currentEditingScheduleId = null;
@@ -558,8 +601,41 @@ async function loadSchedules() {
   }
 }
 
+function isKeepRunningSchedule(schedule) {
+  return schedule.operation === OP_KEEP_RUNNING;
+}
+
+function getCheckIntervalMinutes(schedule) {
+  const minutes = parseInt(schedule?.checkIntervalMinutes, 10);
+  return Number.isFinite(minutes) && minutes > 0 ? minutes : DEFAULT_CHECK_INTERVAL_MINUTES;
+}
+
+function getOperationMeta(operation) {
+  switch (operation) {
+    case OP_RESUME:
+      return { label: t('operation_resume'), icon: 'ri-play-circle-line', className: 'resume' };
+    case OP_PAUSE:
+      return { label: t('operation_pause'), icon: 'ri-pause-circle-line', className: 'pause' };
+    case OP_KEEP_RUNNING:
+      return { label: t('operation_keep_running'), icon: 'ri-heart-pulse-line', className: 'keep_running' };
+    default:
+      return { label: operation || t('operation'), icon: 'ri-question-line', className: 'unknown' };
+  }
+}
+
+function formatMonitorInterval(schedule) {
+  if (!schedule.enabled) {
+    return `<span class="countdown-disabled">${t('monitor_disabled')}</span>`;
+  }
+  return tf('monitor_every', { minutes: getCheckIntervalMinutes(schedule) });
+}
+
 // Calculate next execution time for a schedule
 function getNextExecutionTime(schedule) {
+  if (isKeepRunningSchedule(schedule)) {
+    return null;
+  }
+
   if (!schedule.enabled || !schedule.weekDays || schedule.weekDays.length === 0) {
     return null;
   }
@@ -602,7 +678,7 @@ function formatCountdown(nextExecution) {
   const diff = nextExecution - now;
 
   if (diff <= 0) {
-    return `<span class="countdown-now">即将执行...</span>`;
+    return `<span class="countdown-now">${t('countdown_now')}</span>`;
   }
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -634,8 +710,12 @@ function updateCountdowns() {
   schedules.forEach(sch => {
     const element = document.getElementById(`countdown-${sch.id}`);
     if (element) {
-      const nextExecution = getNextExecutionTime(sch);
-      element.innerHTML = formatCountdown(nextExecution);
+      if (isKeepRunningSchedule(sch)) {
+        element.innerHTML = formatMonitorInterval(sch);
+      } else {
+        const nextExecution = getNextExecutionTime(sch);
+        element.innerHTML = formatCountdown(nextExecution);
+      }
     }
   });
 }
@@ -671,8 +751,30 @@ function renderSchedules() {
   const dayNames = t('days');
 
   container.innerHTML = schedules.map(sch => {
-    const nextExecution = getNextExecutionTime(sch);
-    const countdownText = formatCountdown(nextExecution);
+    const keepRunning = isKeepRunningSchedule(sch);
+    const operationMeta = getOperationMeta(sch.operation);
+    const countdownIcon = keepRunning ? 'ri-heart-pulse-line' : 'ri-timer-line';
+    const countdownText = keepRunning ? formatMonitorInterval(sch) : formatCountdown(getNextExecutionTime(sch));
+    const scheduleDetail = keepRunning
+      ? `
+        <div class="schedule-time schedule-interval">
+          <i class="ri-loop-right-line schedule-time-icon"></i>
+          ${getCheckIntervalMinutes(sch)} ${t('interval_unit_minutes')}
+        </div>
+      `
+      : `
+        <div class="schedule-time">
+          <i class="ri-time-line schedule-time-icon"></i>
+          ${String(sch.hour).padStart(2, '0')}:${String(sch.minute).padStart(2, '0')}
+        </div>
+      `;
+    const daysMarkup = keepRunning ? '' : `
+      <div class="schedule-days">
+        ${[0, 1, 2, 3, 4, 5, 6].map(day => `
+          <span class="schedule-day ${(sch.weekDays || []).includes(day) ? 'active' : ''}">${dayNames[day]}</span>
+        `).join('')}
+      </div>
+    `;
 
     return `
     <div class="card schedule-card">
@@ -686,25 +788,18 @@ function renderSchedules() {
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <div class="schedule-countdown">
-        <i class="ri-timer-line"></i>
+      <div class="schedule-countdown ${keepRunning ? 'monitor' : ''}">
+        <i class="${countdownIcon}"></i>
         <span id="countdown-${sch.id}">${countdownText}</span>
       </div>
       <div class="schedule-body">
-        <div class="schedule-time">
-          <i class="ri-time-line schedule-time-icon"></i>
-          ${String(sch.hour).padStart(2, '0')}:${String(sch.minute).padStart(2, '0')}
-        </div>
-        <div class="schedule-operation ${sch.operation}">
-          <i class="ri-${sch.operation === 'resume' ? 'play' : 'pause'}-circle-line"></i>
-          ${sch.operation === 'resume' ? t('operation_resume') : t('operation_pause')}
+        ${scheduleDetail}
+        <div class="schedule-operation ${operationMeta.className}">
+          <i class="${operationMeta.icon}"></i>
+          ${operationMeta.label}
         </div>
       </div>
-      <div class="schedule-days">
-        ${[0, 1, 2, 3, 4, 5, 6].map(day => `
-          <span class="schedule-day ${sch.weekDays.includes(day) ? 'active' : ''}">${dayNames[day]}</span>
-        `).join('')}
-      </div>
+      ${daysMarkup}
       <div class="schedule-footer">
         <button class="btn btn-secondary btn-sm" onclick="editSchedule('${sch.id}')">
           <i class="ri-edit-line"></i>
@@ -723,6 +818,41 @@ function renderSchedules() {
   startCountdownTimer();
 }
 
+function getSelectedTaskType() {
+  return document.querySelector('input[name="taskType"]:checked')?.value || TASK_TYPE_TIMED;
+}
+
+function setSelectedTaskType(type) {
+  const radio = document.querySelector(`input[name="taskType"][value="${type}"]`);
+  if (radio) radio.checked = true;
+  handleTaskTypeChange();
+}
+
+function handleTaskTypeChange() {
+  const keepRunning = getSelectedTaskType() === TASK_TYPE_KEEP_RUNNING;
+  const timedFields = document.getElementById('timedScheduleFields');
+  const monitorFields = document.getElementById('monitorScheduleFields');
+  const operationInput = document.getElementById('scheduleOperation');
+  const hourInput = document.getElementById('scheduleHour');
+  const minuteInput = document.getElementById('scheduleMinute');
+  const intervalInput = document.getElementById('scheduleIntervalMinutes');
+
+  if (timedFields) timedFields.classList.toggle('hidden', keepRunning);
+  if (monitorFields) monitorFields.classList.toggle('hidden', !keepRunning);
+
+  [operationInput, hourInput, minuteInput].forEach(input => {
+    if (!input) return;
+    input.disabled = keepRunning;
+    input.required = !keepRunning;
+  });
+
+  if (intervalInput) {
+    intervalInput.disabled = !keepRunning;
+    intervalInput.required = keepRunning;
+    if (!intervalInput.value) intervalInput.value = DEFAULT_CHECK_INTERVAL_MINUTES;
+  }
+}
+
 function openScheduleModal(scheduleId = null) {
   currentEditingScheduleId = scheduleId;
   const modal = document.getElementById('scheduleModal');
@@ -731,6 +861,9 @@ function openScheduleModal(scheduleId = null) {
 
   title.textContent = scheduleId ? t('edit') + ' ' + t('scheduled_tasks') : t('new_task');
   form.reset();
+  setSelectedTaskType(TASK_TYPE_TIMED);
+  const intervalInput = document.getElementById('scheduleIntervalMinutes');
+  if (intervalInput) intervalInput.value = DEFAULT_CHECK_INTERVAL_MINUTES;
 
   // Reset day checkboxes
   document.querySelectorAll('input[name="weekDays"]').forEach(cb => cb.checked = false);
@@ -740,10 +873,12 @@ function openScheduleModal(scheduleId = null) {
     if (sch) {
       document.getElementById('scheduleName').value = sch.name;
       document.getElementById('scheduleApp').value = sch.appId;
-      document.getElementById('scheduleOperation').value = sch.operation;
+      setSelectedTaskType(isKeepRunningSchedule(sch) ? TASK_TYPE_KEEP_RUNNING : TASK_TYPE_TIMED);
+      document.getElementById('scheduleOperation').value = isKeepRunningSchedule(sch) ? OP_RESUME : sch.operation;
       document.getElementById('scheduleHour').value = sch.hour;
       document.getElementById('scheduleMinute').value = sch.minute;
-      sch.weekDays.forEach(day => {
+      if (intervalInput) intervalInput.value = getCheckIntervalMinutes(sch);
+      (sch.weekDays || []).forEach(day => {
         const cb = document.querySelector(`input[name="weekDays"][value="${day}"]`);
         if (cb) cb.checked = true;
       });
@@ -765,11 +900,21 @@ function editSchedule(id) {
 async function saveSchedule(event) {
   event.preventDefault();
 
+  const keepRunning = getSelectedTaskType() === TASK_TYPE_KEEP_RUNNING;
   const weekDays = Array.from(document.querySelectorAll('input[name="weekDays"]:checked'))
     .map(cb => parseInt(cb.value));
 
-  if (weekDays.length === 0) {
+  if (!keepRunning && weekDays.length === 0) {
     showToast(t('toast_select_day'), 'warning');
+    return;
+  }
+
+  const checkIntervalMinutes = keepRunning
+    ? parseInt(document.getElementById('scheduleIntervalMinutes').value, 10)
+    : DEFAULT_CHECK_INTERVAL_MINUTES;
+
+  if (keepRunning && (!Number.isFinite(checkIntervalMinutes) || checkIntervalMinutes < 1)) {
+    showToast(t('toast_interval_invalid'), 'warning');
     return;
   }
 
@@ -780,10 +925,11 @@ async function saveSchedule(event) {
     name: document.getElementById('scheduleName').value,
     appId: appSelect.value,
     appTitle: selectedOption?.dataset?.title || appSelect.value,
-    operation: document.getElementById('scheduleOperation').value,
-    hour: parseInt(document.getElementById('scheduleHour').value),
-    minute: parseInt(document.getElementById('scheduleMinute').value),
-    weekDays: weekDays
+    operation: keepRunning ? OP_KEEP_RUNNING : document.getElementById('scheduleOperation').value,
+    hour: keepRunning ? 0 : parseInt(document.getElementById('scheduleHour').value),
+    minute: keepRunning ? 0 : parseInt(document.getElementById('scheduleMinute').value),
+    weekDays: keepRunning ? [] : weekDays,
+    checkIntervalMinutes: checkIntervalMinutes
   };
 
   try {

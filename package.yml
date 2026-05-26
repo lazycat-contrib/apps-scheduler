@@ -2,7 +2,7 @@ name: 应用定时管家
 package: community.lazycat.app.czyt.apps-scheduler
 version: 1.0.1
 min_os_version: 1.5.0
-description: "定时启动和停止懒猫微服上的应用"
+description: "定时启动、停止并保持运行懒猫微服上的应用"
 license: mit/
 homepage: https://czyt.tech
 author: czyt
@@ -10,13 +10,13 @@ author: czyt
 locales:
   zh:
     name: "应用定时管家"
-    description: "定时启动和停止懒猫微服上的应用"
+    description: "定时启动、停止并保持运行懒猫微服上的应用"
   en:
     name: "App Scheduler"
-    description: "Schedule start and stop operations for apps on LazyCat"
+    description: "Schedule start, stop, and keep-running operations for apps on LazyCat"
   ja:
     name: "アプリスケジューラー"
-    description: "LazyCat上のアプリを定期的に起動・停止"
+    description: "LazyCat上のアプリを定期的に起動・停止し、稼働維持も行います"
 
 unsupported_platforms:
   - ios

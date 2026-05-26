@@ -789,6 +789,12 @@ body::after {
   font-size: 16px;
 }
 
+.schedule-countdown.monitor {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-secondary) 16%, transparent) 0%, transparent 100%);
+  border-color: color-mix(in srgb, var(--accent-secondary) 35%, transparent);
+  color: var(--accent-secondary);
+}
+
 .schedule-countdown .countdown-disabled {
   color: var(--text-muted);
   font-style: italic;
@@ -839,16 +845,24 @@ body::after {
   text-transform: uppercase;
 }
 
+.schedule-operation.resume,
 .schedule-operation.start {
   background: rgba(0, 255, 136, 0.15);
   color: var(--accent-success);
   border: 1px solid rgba(0, 255, 136, 0.3);
 }
 
+.schedule-operation.pause,
 .schedule-operation.stop {
   background: rgba(255, 68, 102, 0.15);
   color: var(--accent-danger);
   border: 1px solid rgba(255, 68, 102, 0.3);
+}
+
+.schedule-operation.keep_running {
+  background: color-mix(in srgb, var(--accent-secondary) 16%, transparent);
+  color: var(--accent-secondary);
+  border: 1px solid color-mix(in srgb, var(--accent-secondary) 36%, transparent);
 }
 
 .schedule-days {
@@ -991,6 +1005,57 @@ body::after {
   color: var(--text-primary);
 }
 
+/* Segmented task type control */
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.segmented-item {
+  position: relative;
+  min-width: 0;
+}
+
+.segmented-item input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.segmented-item > span {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.segmented-item input:focus-visible + span {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.segmented-item input:checked + span {
+  background: var(--bg-card);
+  color: var(--accent-primary);
+  box-shadow:
+    inset 0 1px 0 0 color-mix(in srgb, var(--text-primary) 8%, transparent),
+    0 0 0 1px var(--border-accent);
+}
+
 /* Time input group */
 .time-input-group {
   display: flex;
@@ -998,11 +1063,36 @@ body::after {
   gap: 8px;
 }
 
+.interval-input-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .time-input {
   width: 70px;
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
+}
+
+.interval-input {
+  width: 120px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.input-unit {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 
 .time-separator {
@@ -1473,6 +1563,18 @@ body::after {
   .time-input-group {
     width: 100%;
     justify-content: center;
+  }
+
+  .interval-input-group {
+    width: 100%;
+  }
+
+  .interval-input {
+    flex: 1;
+  }
+
+  .input-unit {
+    flex-shrink: 0;
   }
 
   .day-picker {

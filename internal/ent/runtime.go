@@ -95,16 +95,36 @@ func init() {
 			return nil
 		}
 	}()
+	// scheduleDescCheckIntervalMinutes is the schema descriptor for check_interval_minutes field.
+	scheduleDescCheckIntervalMinutes := scheduleFields[8].Descriptor()
+	// schedule.DefaultCheckIntervalMinutes holds the default value on creation for the check_interval_minutes field.
+	schedule.DefaultCheckIntervalMinutes = scheduleDescCheckIntervalMinutes.Default.(int)
+	// schedule.CheckIntervalMinutesValidator is a validator for the "check_interval_minutes" field. It is called by the builders before save.
+	schedule.CheckIntervalMinutesValidator = func() func(int) error {
+		validators := scheduleDescCheckIntervalMinutes.Validators
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
+		}
+		return func(check_interval_minutes int) error {
+			for _, fn := range fns {
+				if err := fn(check_interval_minutes); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// scheduleDescEnabled is the schema descriptor for enabled field.
-	scheduleDescEnabled := scheduleFields[8].Descriptor()
+	scheduleDescEnabled := scheduleFields[9].Descriptor()
 	// schedule.DefaultEnabled holds the default value on creation for the enabled field.
 	schedule.DefaultEnabled = scheduleDescEnabled.Default.(bool)
 	// scheduleDescCreatedAt is the schema descriptor for created_at field.
-	scheduleDescCreatedAt := scheduleFields[10].Descriptor()
+	scheduleDescCreatedAt := scheduleFields[11].Descriptor()
 	// schedule.DefaultCreatedAt holds the default value on creation for the created_at field.
 	schedule.DefaultCreatedAt = scheduleDescCreatedAt.Default.(func() time.Time)
 	// scheduleDescUpdatedAt is the schema descriptor for updated_at field.
-	scheduleDescUpdatedAt := scheduleFields[11].Descriptor()
+	scheduleDescUpdatedAt := scheduleFields[12].Descriptor()
 	// schedule.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	schedule.DefaultUpdatedAt = scheduleDescUpdatedAt.Default.(func() time.Time)
 	// schedule.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
