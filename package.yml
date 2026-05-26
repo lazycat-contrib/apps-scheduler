@@ -1,6 +1,6 @@
 name: 应用定时管家
 package: community.lazycat.app.czyt.apps-scheduler
-version: 1.0.1
+version: 1.0.2
 min_os_version: 1.5.0
 description: "定时启动、停止并保持运行懒猫微服上的应用"
 license: mit/
