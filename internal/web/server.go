@@ -8,6 +8,7 @@ import (
 	"apps-scheduler/internal/auth"
 	"apps-scheduler/internal/biz"
 	"apps-scheduler/internal/handlers"
+	"apps-scheduler/internal/mcpserver"
 	"apps-scheduler/internal/version"
 
 	"github.com/labstack/echo/v4"
@@ -19,9 +20,9 @@ import (
 var publicFS embed.FS
 
 type Server struct {
-	echo         *echo.Echo
-	useCase      *biz.UseCase
-	oidcProvider *auth.OIDCProvider
+	echo          *echo.Echo
+	useCase       *biz.UseCase
+	oidcProvider  *auth.OIDCProvider
 	publicContent fs.FS
 }
 
@@ -67,6 +68,7 @@ func (s *Server) setupRoutes() {
 	// Public routes
 	s.echo.GET("/login", s.serveFile("login.html"))
 	s.echo.GET("/logout", auth.HandleLogout)
+	s.echo.Any("/mcp", echo.WrapHandler(mcpserver.NewHTTPHandler(s.useCase)))
 
 	// OIDC routes
 	if s.oidcProvider != nil {
@@ -108,6 +110,12 @@ func (s *Server) setupRoutes() {
 	api.GET("/notify/config", notifyHandler.GetConfig)
 	api.POST("/notify/config", notifyHandler.SaveConfig)
 	api.POST("/notify/test", notifyHandler.TestNotify)
+
+	// MCP token management
+	mcpTokenHandler := handlers.NewMCPTokenHandler(s.useCase)
+	api.GET("/mcp/tokens", mcpTokenHandler.ListTokens)
+	api.POST("/mcp/tokens", mcpTokenHandler.CreateToken)
+	api.DELETE("/mcp/tokens/:id", mcpTokenHandler.RevokeToken)
 
 	// Version - public API (no auth required)
 	s.echo.GET("/api/version", s.getVersion)

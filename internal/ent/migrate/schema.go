@@ -8,6 +8,24 @@ import (
 )
 
 var (
+	// McpTokensColumns holds the columns for the "mcp_tokens" table.
+	McpTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "token_prefix", Type: field.TypeString},
+		{Name: "user_id", Type: field.TypeString},
+		{Name: "user_role", Type: field.TypeString, Default: "USER"},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+	}
+	// McpTokensTable holds the schema information for the "mcp_tokens" table.
+	McpTokensTable = &schema.Table{
+		Name:       "mcp_tokens",
+		Columns:    McpTokensColumns,
+		PrimaryKey: []*schema.Column{McpTokensColumns[0]},
+	}
 	// NotifyConfigsColumns holds the columns for the "notify_configs" table.
 	NotifyConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -47,6 +65,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		McpTokensTable,
 		NotifyConfigsTable,
 		SchedulesTable,
 	}

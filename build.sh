@@ -22,7 +22,7 @@ echo -e "${YELLOW}[1/4] Preparing Go modules...${NC}"
 go mod tidy && go mod download
 
 echo -e "${YELLOW}[2/4] Generating Ent code...${NC}"
-go generate ./internal/ent
+(cd internal/ent && go run generate.go)
 
 echo -e "${YELLOW}[3/4] Building binary...${NC}"
 echo "  Version:    ${VERSION}"

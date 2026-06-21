@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"apps-scheduler/internal/ent/mcptoken"
 	"apps-scheduler/internal/ent/notifyconfig"
 	"apps-scheduler/internal/ent/schedule"
 	"context"
@@ -74,6 +75,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			mcptoken.Table:     mcptoken.ValidColumn,
 			notifyconfig.Table: notifyconfig.ValidColumn,
 			schedule.Table:     schedule.ValidColumn,
 		})

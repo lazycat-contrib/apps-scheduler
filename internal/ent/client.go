@@ -11,6 +11,7 @@ import (
 
 	"apps-scheduler/internal/ent/migrate"
 
+	"apps-scheduler/internal/ent/mcptoken"
 	"apps-scheduler/internal/ent/notifyconfig"
 	"apps-scheduler/internal/ent/schedule"
 
@@ -25,6 +26,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// MCPToken is the client for interacting with the MCPToken builders.
+	MCPToken *MCPTokenClient
 	// NotifyConfig is the client for interacting with the NotifyConfig builders.
 	NotifyConfig *NotifyConfigClient
 	// Schedule is the client for interacting with the Schedule builders.
@@ -40,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.MCPToken = NewMCPTokenClient(c.config)
 	c.NotifyConfig = NewNotifyConfigClient(c.config)
 	c.Schedule = NewScheduleClient(c.config)
 }
@@ -134,6 +138,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:          ctx,
 		config:       cfg,
+		MCPToken:     NewMCPTokenClient(cfg),
 		NotifyConfig: NewNotifyConfigClient(cfg),
 		Schedule:     NewScheduleClient(cfg),
 	}, nil
@@ -155,6 +160,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:          ctx,
 		config:       cfg,
+		MCPToken:     NewMCPTokenClient(cfg),
 		NotifyConfig: NewNotifyConfigClient(cfg),
 		Schedule:     NewScheduleClient(cfg),
 	}, nil
@@ -163,7 +169,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		NotifyConfig.
+//		MCPToken.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -185,6 +191,7 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.MCPToken.Use(hooks...)
 	c.NotifyConfig.Use(hooks...)
 	c.Schedule.Use(hooks...)
 }
@@ -192,6 +199,7 @@ func (c *Client) Use(hooks ...Hook) {
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.MCPToken.Intercept(interceptors...)
 	c.NotifyConfig.Intercept(interceptors...)
 	c.Schedule.Intercept(interceptors...)
 }
@@ -199,12 +207,147 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *MCPTokenMutation:
+		return c.MCPToken.mutate(ctx, m)
 	case *NotifyConfigMutation:
 		return c.NotifyConfig.mutate(ctx, m)
 	case *ScheduleMutation:
 		return c.Schedule.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// MCPTokenClient is a client for the MCPToken schema.
+type MCPTokenClient struct {
+	config
+}
+
+// NewMCPTokenClient returns a client for the MCPToken from the given config.
+func NewMCPTokenClient(c config) *MCPTokenClient {
+	return &MCPTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `mcptoken.Hooks(f(g(h())))`.
+func (c *MCPTokenClient) Use(hooks ...Hook) {
+	c.hooks.MCPToken = append(c.hooks.MCPToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `mcptoken.Intercept(f(g(h())))`.
+func (c *MCPTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.MCPToken = append(c.inters.MCPToken, interceptors...)
+}
+
+// Create returns a builder for creating a MCPToken entity.
+func (c *MCPTokenClient) Create() *MCPTokenCreate {
+	mutation := newMCPTokenMutation(c.config, OpCreate)
+	return &MCPTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of MCPToken entities.
+func (c *MCPTokenClient) CreateBulk(builders ...*MCPTokenCreate) *MCPTokenCreateBulk {
+	return &MCPTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *MCPTokenClient) MapCreateBulk(slice any, setFunc func(*MCPTokenCreate, int)) *MCPTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &MCPTokenCreateBulk{err: fmt.Errorf("calling to MCPTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*MCPTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &MCPTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for MCPToken.
+func (c *MCPTokenClient) Update() *MCPTokenUpdate {
+	mutation := newMCPTokenMutation(c.config, OpUpdate)
+	return &MCPTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *MCPTokenClient) UpdateOne(_m *MCPToken) *MCPTokenUpdateOne {
+	mutation := newMCPTokenMutation(c.config, OpUpdateOne, withMCPToken(_m))
+	return &MCPTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *MCPTokenClient) UpdateOneID(id uuid.UUID) *MCPTokenUpdateOne {
+	mutation := newMCPTokenMutation(c.config, OpUpdateOne, withMCPTokenID(id))
+	return &MCPTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for MCPToken.
+func (c *MCPTokenClient) Delete() *MCPTokenDelete {
+	mutation := newMCPTokenMutation(c.config, OpDelete)
+	return &MCPTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *MCPTokenClient) DeleteOne(_m *MCPToken) *MCPTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *MCPTokenClient) DeleteOneID(id uuid.UUID) *MCPTokenDeleteOne {
+	builder := c.Delete().Where(mcptoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &MCPTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for MCPToken.
+func (c *MCPTokenClient) Query() *MCPTokenQuery {
+	return &MCPTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeMCPToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a MCPToken entity by its id.
+func (c *MCPTokenClient) Get(ctx context.Context, id uuid.UUID) (*MCPToken, error) {
+	return c.Query().Where(mcptoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *MCPTokenClient) GetX(ctx context.Context, id uuid.UUID) *MCPToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *MCPTokenClient) Hooks() []Hook {
+	return c.hooks.MCPToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *MCPTokenClient) Interceptors() []Interceptor {
+	return c.inters.MCPToken
+}
+
+func (c *MCPTokenClient) mutate(ctx context.Context, m *MCPTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&MCPTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&MCPTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&MCPTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&MCPTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown MCPToken mutation op: %q", m.Op())
 	}
 }
 
@@ -477,9 +620,9 @@ func (c *ScheduleClient) mutate(ctx context.Context, m *ScheduleMutation) (Value
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		NotifyConfig, Schedule []ent.Hook
+		MCPToken, NotifyConfig, Schedule []ent.Hook
 	}
 	inters struct {
-		NotifyConfig, Schedule []ent.Interceptor
+		MCPToken, NotifyConfig, Schedule []ent.Interceptor
 	}
 )

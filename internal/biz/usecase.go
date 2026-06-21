@@ -3,8 +3,10 @@ package biz
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"apps-scheduler/internal/ent"
+	"apps-scheduler/internal/ent/mcptoken"
 	"apps-scheduler/internal/ent/notifyconfig"
 	"apps-scheduler/internal/ent/schedule"
 
@@ -137,5 +139,61 @@ func (u *UseCase) SaveNotifyConfig(ctx context.Context, userID, sendKey string, 
 		SetEnabled(enabled).
 		SetOnSuccess(onSuccess).
 		SetOnFailure(onFailure).
+		Save(ctx)
+}
+
+// MCP token operations
+
+func (u *UseCase) CreateMCPToken(ctx context.Context, name, tokenHash, tokenPrefix, userID, userRole string) (*ent.MCPToken, error) {
+	if userRole == "" {
+		userRole = "USER"
+	}
+	return u.client.MCPToken.Create().
+		SetName(name).
+		SetTokenHash(tokenHash).
+		SetTokenPrefix(tokenPrefix).
+		SetUserID(userID).
+		SetUserRole(userRole).
+		Save(ctx)
+}
+
+func (u *UseCase) ListMCPTokens(ctx context.Context, userID string, includeRevoked bool) ([]*ent.MCPToken, error) {
+	query := u.client.MCPToken.Query().
+		Where(mcptoken.UserID(userID)).
+		Order(ent.Desc(mcptoken.FieldCreatedAt))
+	if !includeRevoked {
+		query.Where(mcptoken.RevokedAtIsNil())
+	}
+	return query.All(ctx)
+}
+
+func (u *UseCase) GetActiveMCPTokenByHash(ctx context.Context, tokenHash string) (*ent.MCPToken, error) {
+	return u.client.MCPToken.Query().
+		Where(
+			mcptoken.TokenHash(tokenHash),
+			mcptoken.RevokedAtIsNil(),
+		).
+		Only(ctx)
+}
+
+func (u *UseCase) TouchMCPToken(ctx context.Context, id uuid.UUID) error {
+	return u.client.MCPToken.UpdateOneID(id).
+		SetLastUsedAt(time.Now()).
+		Exec(ctx)
+}
+
+func (u *UseCase) RevokeMCPToken(ctx context.Context, id uuid.UUID, userID, userRole string) (*ent.MCPToken, error) {
+	token, err := u.client.MCPToken.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if token.UserID != userID && userRole != "ADMIN" {
+		return nil, fmt.Errorf("permission denied")
+	}
+	if token.RevokedAt != nil {
+		return token, nil
+	}
+	return u.client.MCPToken.UpdateOneID(id).
+		SetRevokedAt(time.Now()).
 		Save(ctx)
 }

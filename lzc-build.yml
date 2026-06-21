@@ -18,6 +18,11 @@ pkgout: ./
 # icon 仅仅允许 png 后缀的文件
 icon: ./icon.png
 
+# Export the app's MCP provider to LazyCat agents and other apps.
+resource_exports:
+  - kind: mcp-providers
+    source: ./resources/mcp-providers
+
 # dvshell 指定开发依赖的情况
 # 这种情况下，选用 alpine:latest 作为基础镜像，在 dependencies 中添加所需要的开发依赖即可
 devshell:

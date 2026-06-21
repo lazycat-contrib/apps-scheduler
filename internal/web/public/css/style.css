@@ -1393,7 +1393,7 @@ body::after {
 
 /* ============ SETTINGS PAGE ============ */
 .settings-card {
-  max-width: 600px;
+  max-width: 760px;
 }
 
 .settings-section {
@@ -1438,6 +1438,118 @@ body::after {
   color: var(--text-muted);
   margin-top: 4px;
   text-wrap: pretty;
+}
+
+.token-create-row,
+.token-created-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.token-help {
+  font-size: 12px;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.token-help code,
+.token-meta code {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--accent-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+}
+
+.token-created {
+  padding: 14px;
+  margin: 16px 0 24px;
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  background: var(--accent-primary-dim);
+}
+
+.token-created-label {
+  font-size: 12px;
+  color: var(--accent-primary);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.token-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.token-list-heading {
+  margin-top: 24px;
+}
+
+.token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.token-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.token-item.revoked {
+  opacity: 0.62;
+}
+
+.token-main {
+  min-width: 0;
+}
+
+.token-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.token-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.token-revoked {
+  color: var(--accent-danger);
+  font-weight: 600;
+}
+
+.empty-state.compact {
+  min-height: auto;
+  padding: 18px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 640px) {
+  .token-create-row,
+  .token-created-row,
+  .token-item {
+    grid-template-columns: 1fr;
+  }
+
+  .token-actions {
+    justify-self: start;
+  }
 }
 
 /* ============ LOGIN PAGE ============ */

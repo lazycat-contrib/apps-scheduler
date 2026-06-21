@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// MCPToken is the predicate function for mcptoken builders.
+type MCPToken func(*sql.Selector)
+
 // NotifyConfig is the predicate function for notifyconfig builders.
 type NotifyConfig func(*sql.Selector)
 

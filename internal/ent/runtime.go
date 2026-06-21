@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"apps-scheduler/internal/ent/mcptoken"
 	"apps-scheduler/internal/ent/notifyconfig"
 	"apps-scheduler/internal/ent/schedule"
 	"apps-scheduler/internal/ent/schema"
@@ -15,6 +16,36 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	mcptokenFields := schema.MCPToken{}.Fields()
+	_ = mcptokenFields
+	// mcptokenDescName is the schema descriptor for name field.
+	mcptokenDescName := mcptokenFields[1].Descriptor()
+	// mcptoken.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	mcptoken.NameValidator = mcptokenDescName.Validators[0].(func(string) error)
+	// mcptokenDescTokenHash is the schema descriptor for token_hash field.
+	mcptokenDescTokenHash := mcptokenFields[2].Descriptor()
+	// mcptoken.TokenHashValidator is a validator for the "token_hash" field. It is called by the builders before save.
+	mcptoken.TokenHashValidator = mcptokenDescTokenHash.Validators[0].(func(string) error)
+	// mcptokenDescTokenPrefix is the schema descriptor for token_prefix field.
+	mcptokenDescTokenPrefix := mcptokenFields[3].Descriptor()
+	// mcptoken.TokenPrefixValidator is a validator for the "token_prefix" field. It is called by the builders before save.
+	mcptoken.TokenPrefixValidator = mcptokenDescTokenPrefix.Validators[0].(func(string) error)
+	// mcptokenDescUserID is the schema descriptor for user_id field.
+	mcptokenDescUserID := mcptokenFields[4].Descriptor()
+	// mcptoken.UserIDValidator is a validator for the "user_id" field. It is called by the builders before save.
+	mcptoken.UserIDValidator = mcptokenDescUserID.Validators[0].(func(string) error)
+	// mcptokenDescUserRole is the schema descriptor for user_role field.
+	mcptokenDescUserRole := mcptokenFields[5].Descriptor()
+	// mcptoken.DefaultUserRole holds the default value on creation for the user_role field.
+	mcptoken.DefaultUserRole = mcptokenDescUserRole.Default.(string)
+	// mcptokenDescCreatedAt is the schema descriptor for created_at field.
+	mcptokenDescCreatedAt := mcptokenFields[6].Descriptor()
+	// mcptoken.DefaultCreatedAt holds the default value on creation for the created_at field.
+	mcptoken.DefaultCreatedAt = mcptokenDescCreatedAt.Default.(func() time.Time)
+	// mcptokenDescID is the schema descriptor for id field.
+	mcptokenDescID := mcptokenFields[0].Descriptor()
+	// mcptoken.DefaultID holds the default value on creation for the id field.
+	mcptoken.DefaultID = mcptokenDescID.Default.(func() uuid.UUID)
 	notifyconfigFields := schema.NotifyConfig{}.Fields()
 	_ = notifyconfigFields
 	// notifyconfigDescUserID is the schema descriptor for user_id field.

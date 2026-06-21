@@ -12,6 +12,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// MCPToken is the client for interacting with the MCPToken builders.
+	MCPToken *MCPTokenClient
 	// NotifyConfig is the client for interacting with the NotifyConfig builders.
 	NotifyConfig *NotifyConfigClient
 	// Schedule is the client for interacting with the Schedule builders.
@@ -147,6 +149,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.MCPToken = NewMCPTokenClient(tx.config)
 	tx.NotifyConfig = NewNotifyConfigClient(tx.config)
 	tx.Schedule = NewScheduleClient(tx.config)
 }
@@ -158,7 +161,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: NotifyConfig.QueryXXX(), the query will be executed
+// applies a query, for example: MCPToken.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

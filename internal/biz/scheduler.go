@@ -24,6 +24,7 @@ const defaultKeepRunningIntervalMinutes = 5
 type Scheduler struct {
 	useCase               *UseCase
 	stopCh                chan struct{}
+	stopOnce              sync.Once
 	wg                    sync.WaitGroup
 	loc                   *time.Location // Timezone location for all time operations
 	lastKeepRunningChecks map[uuid.UUID]time.Time
@@ -60,9 +61,11 @@ func (s *Scheduler) Start() {
 }
 
 func (s *Scheduler) Stop() {
-	close(s.stopCh)
-	s.wg.Wait()
-	log.Info().Msg("Scheduler stopped")
+	s.stopOnce.Do(func() {
+		close(s.stopCh)
+		s.wg.Wait()
+		log.Info().Msg("Scheduler stopped")
+	})
 }
 
 func (s *Scheduler) run() {

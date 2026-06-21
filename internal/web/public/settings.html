@@ -115,6 +115,57 @@
         </div>
       </section>
 
+      <!-- MCP Token Settings -->
+      <section class="section">
+        <div class="card settings-card">
+          <div class="settings-section">
+            <div class="settings-section-title">
+              <i class="ri-key-2-line"></i>
+              <span data-i18n="mcp_tokens">MCP 访问 Token</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" data-i18n="mcp_token_name">Token 名称</label>
+              <div class="token-create-row">
+                <input type="text" class="form-input" id="mcpTokenName" data-i18n-placeholder="mcp_token_name_placeholder" placeholder="例如：桌面客户端">
+                <button class="btn btn-primary" onclick="createMCPToken()">
+                  <i class="ri-add-line"></i>
+                  <span data-i18n="create_token">创建 Token</span>
+                </button>
+              </div>
+              <div class="text-muted token-help" data-i18n="mcp_token_hint">
+                Token 只会在创建时显示一次，用于外部 MCP 客户端以 Bearer token 访问 /mcp。
+              </div>
+            </div>
+
+            <div class="token-created hidden" id="mcpTokenCreated">
+              <div class="token-created-label" data-i18n="new_token_once">新 Token 只显示一次</div>
+              <div class="token-created-row">
+                <input type="text" class="form-input token-value" id="mcpTokenValue" readonly>
+                <button class="btn btn-secondary" onclick="copyMCPToken()">
+                  <i class="ri-file-copy-line"></i>
+                  <span data-i18n="copy">复制</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-section-title token-list-heading">
+              <i class="ri-list-check-3"></i>
+              <span data-i18n="existing_tokens">已有 Token</span>
+            </div>
+            <div class="token-list" id="mcpTokenList">
+              <div class="loading"><div class="loading-spinner"></div></div>
+            </div>
+
+            <div class="text-muted token-help">
+              <span data-i18n="mcp_lazycat_hint">懒猫应用间调用请使用</span>
+              <code>http://app.community.lazycat.app.czyt.apps-scheduler.lzcx/mcp</code>
+              <span data-i18n="mcp_lazycat_ticket_hint">并转发当前用户的 X-HC-USER-TICKET。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- About -->
       <section class="section">
         <div class="card settings-card">
@@ -146,6 +197,7 @@
       document.getElementById('langSelector').value = currentLang;
       await loadUserInfo();
       await loadNotifyConfig();
+      await loadMCPTokens();
       await loadVersion();
     });
 
@@ -215,6 +267,116 @@
       } catch (err) {
         showToast(t('toast_send_failed') + ': ' + err.message, 'error');
       }
+    }
+
+    async function loadMCPTokens() {
+      const list = document.getElementById('mcpTokenList');
+      if (!list) return;
+
+      list.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+      try {
+        const resp = await fetch('/api/mcp/tokens');
+        if (!resp.ok) throw new Error('Failed to load tokens');
+        const items = await resp.json();
+        renderMCPTokens(items || []);
+      } catch (err) {
+        console.error('Failed to load MCP tokens:', err);
+        list.innerHTML = `<div class="empty-state compact">${t('toast_load_failed')}</div>`;
+      }
+    }
+
+    function renderMCPTokens(items) {
+      const list = document.getElementById('mcpTokenList');
+      if (!items.length) {
+        list.innerHTML = `<div class="empty-state compact">${t('no_tokens')}</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => {
+        const revoked = Boolean(item.revokedAt);
+        return `
+          <div class="token-item ${revoked ? 'revoked' : ''}">
+            <div class="token-main">
+              <div class="token-name">${escapeHTML(item.name)}</div>
+              <div class="token-meta">
+                <code>${escapeHTML(item.prefix)}...</code>
+                <span>${t('created_at')}: ${formatDateTime(item.createdAt)}</span>
+                <span>${t('last_used')}: ${item.lastUsedAt ? formatDateTime(item.lastUsedAt) : t('never_used')}</span>
+                ${revoked ? `<span class="token-revoked">${t('revoked')}</span>` : ''}
+              </div>
+            </div>
+            <div class="token-actions">
+              ${revoked ? '' : `
+                <button class="btn btn-danger btn-sm" onclick="revokeMCPToken('${item.id}')">
+                  <i class="ri-delete-bin-line"></i>
+                  <span>${t('revoke')}</span>
+                </button>
+              `}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function createMCPToken() {
+      try {
+        const name = document.getElementById('mcpTokenName').value.trim();
+        const resp = await fetch('/api/mcp/tokens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Failed to create token');
+
+        document.getElementById('mcpTokenValue').value = data.token;
+        document.getElementById('mcpTokenCreated').classList.remove('hidden');
+        document.getElementById('mcpTokenName').value = '';
+        showToast(t('token_created'), 'success');
+        await loadMCPTokens();
+      } catch (err) {
+        showToast(t('token_create_failed') + ': ' + err.message, 'error');
+      }
+    }
+
+    async function revokeMCPToken(id) {
+      if (!confirm(t('confirm_revoke_token'))) return;
+      try {
+        const resp = await fetch(`/api/mcp/tokens/${id}`, { method: 'DELETE' });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Failed to revoke token');
+        showToast(t('token_revoked'), 'success');
+        await loadMCPTokens();
+      } catch (err) {
+        showToast(t('token_revoke_failed') + ': ' + err.message, 'error');
+      }
+    }
+
+    async function copyMCPToken() {
+      const value = document.getElementById('mcpTokenValue').value;
+      if (!value) return;
+      try {
+        await navigator.clipboard.writeText(value);
+        showToast(t('copied'), 'success');
+      } catch (err) {
+        document.getElementById('mcpTokenValue').select();
+        showToast(t('copy_failed'), 'warning');
+      }
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '-';
+      return new Date(value).toLocaleString();
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[ch]));
     }
   </script>
 </body>
