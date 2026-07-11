@@ -1,0 +1,30 @@
+version: 1
+
+project:
+  root: .
+  build_config: lzc-build.yml
+  package_file: package.yml
+  output: .lazycat-build/apps-scheduler.lpk
+
+update:
+  strategy: publish
+  version_source:
+    type: git
+
+build:
+  toolchains:
+    - kind: go
+      version: 1.25.x
+  run_buildscript: true
+
+stores:
+  official:
+    enabled: true
+    skip_if_version_exists: true
+    create_if_missing: false
+    changelog_locales: [zh, en, ja]
+  private:
+    enabled: true
+    skip_if_version_exists: true
+    name: 应用定时管家
+    summary: Published from GitHub Actions

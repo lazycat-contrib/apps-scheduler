@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
 echo "=== Meow App Operator Build Script ==="
 
@@ -16,10 +16,10 @@ fi
 
 # Get git info
 GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-BUILD_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+BUILD_TIME=$(date -u -d "@${SOURCE_DATE_EPOCH:-0}" +"%Y-%m-%dT%H:%M:%SZ")
 
 echo -e "${YELLOW}[1/4] Preparing Go modules...${NC}"
-go mod tidy && go mod download
+go mod download
 
 echo -e "${YELLOW}[2/4] Generating Ent code...${NC}"
 (cd internal/ent && go run generate.go)
@@ -37,7 +37,7 @@ LDFLAGS="-s -w \
 -X apps-scheduler/internal/version.GitCommit=${GIT_COMMIT} \
 -X apps-scheduler/internal/version.BuildTime=${BUILD_TIME}"
 
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="${LDFLAGS}" -o dist/apps-scheduler ./cmd/apps-scheduler
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags="${LDFLAGS}" -o dist/apps-scheduler ./cmd/apps-scheduler
 
 echo -e "${YELLOW}[4/4] Setting permissions...${NC}"
 chmod +x dist/apps-scheduler
